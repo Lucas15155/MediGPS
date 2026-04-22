@@ -1,0 +1,53 @@
+# --- DOSSIERS DE SORTIE (Générés par la compilation) ---
+build/
+dist/
+target/
+bin/
+nbbin/
+
+# --- SPÉCIFIQUE NETBEANS (ANT & GENERAL) ---
+nbproject/private/
+nbproject/build-impl.xml
+nbproject/genfiles.properties
+# Note: On garde project.xml et project.properties qui sont vitaux pour Ant
+
+# --- SPÉCIFIQUE MAVEN ---
+# On ignore les fichiers de log Maven et les artefacts locaux
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# On ignore souvent l'extension .flattened-pom.xml
+.flattened-pom.xml
+
+# --- AUTRES IDE (Pour la collaboration) ---
+.idea/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
+.factorypath
+
+# --- FICHIERS SYSTÈME ET TEMP ---
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+*.swp
+
+# --- DÉPENDANCES ET ARCHIVES ---
+# Pour Maven, les JAR sont dans le repo local (~/.m2), donc on ignore tout JAR local.
+# Si un projet Ant utilise un dossier lib/ interne, décommentez la ligne suivante :
+# !lib/*.jar
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
