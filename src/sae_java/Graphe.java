@@ -14,7 +14,7 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 
 /**
- *
+ *  
  * @author ilies
  */
 public class Graphe {
@@ -113,7 +113,7 @@ public class Graphe {
                 }
             }
         }
-        graph.display();
+        graph.display();  //enlever pour mettre dans une JFrame
     }
 
     //Selon la lettre renvoie le type du centre de santé 
