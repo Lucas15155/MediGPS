@@ -19,7 +19,7 @@ import org.graphstream.graph.implementations.SingleGraph;
  */
 public class Graphe {
 
-//    private static final String graphe1 = "graphe1.csv";
+//       private static final String graphe1 = "graphe1.csv";
 //    private static final String graphe2 = "graphe2.csv";
 //    private static final String graphe3 = "graphe3.csv";
 //    private static final String graphe4 = "graphe4.csv";
