@@ -2,15 +2,23 @@ package sae_java;
 
 import Vue.Fenetre;
 
+/**
+ * Point d'entrée principal (Main) du programme d'évaluation SAE Java. Instancie
+ * l'interface graphique utilisateur (IHM).
+ *
+ * * @author ilies
+ */
 public class SAE_JAVA {
 
+    /**
+     * Méthode principale exécutée au démarrage de l'application.
+     *
+     * @param args Arguments éventuels passés en ligne de commande (non utilisés
+     * ici).
+     * @throws LettreCentreSanteException Si une exception liée aux structures
+     * de données survient au lancement.
+     */
     public static void main(String[] args) throws LettreCentreSanteException {
-         Fenetre fen = new Fenetre();
-        //  Graphe monGraphe = Graphe.ChargerGrapheCsv("graphe1.csv");
-        //   monGraphe.afficherGraph();
-          Graphe monGraphe = new Graphe();
-     //   monGraphe.genererGraph(10);    // générer un graphe avec 10 sommets
-        //    monGraphe.afficherGraph();
-        // *///System.out.println(monGraphe);
+        Fenetre fen = new Fenetre();
     }
 }

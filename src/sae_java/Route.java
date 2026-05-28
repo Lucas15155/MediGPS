@@ -5,8 +5,9 @@
 package sae_java;
 
 /**
- *   
- * @author ilies
+ * Représente une liaison routière orientée entre deux centres de santé.
+ * Une route possède une destination, un indice de fiabilité, une distance et une durée.
+ * * @author ilies
  */
 public class Route {
 
@@ -15,6 +16,15 @@ public class Route {
     private final int distance;
     private final int duree;
 
+    
+    /**
+     * Constructeur de la classe Route.
+     *
+     * @param destination L'identifiant du sommet d'arrivée (ex: "S2").
+     * @param fiabilite   Le taux de fiabilité de la route (compris entre 0.2 et 1.0).
+     * @param distance    La distance en kilomètres.
+     * @param duree       La durée du trajet en minutes.
+     */
     public Route(String destination, double fiabilite, int distance, int duree) {
         this.destination = destination;
         this.fiabilite = fiabilite;
@@ -22,22 +32,49 @@ public class Route {
         this.duree = duree;
     }
 
+    /**
+     * Retourne l'identifiant du sommet de destination.
+     *
+     * @return L'identifiant de destination.
+     */
     public String getDestination() {
         return this.destination;
     }
-
+    
+    /**
+     * Retourne la fiabilité de la route.
+     *
+     * @return La fiabilité.
+     */
     public double getFiabilite() {
         return this.fiabilite;
     }
 
+    
+    /**
+     * Retourne la distance de la route.
+     *
+     * @return La distance en km.
+     */
     public int getDistance() {
         return this.distance;
     }
-
+    
+   /**
+     * Retourne la durée du trajet.
+     *
+     * @return La durée en minutes.
+     */
     public int getDuree() {
         return this.duree;
     }
-
+    
+    
+    /**
+     * Retourne une description textuelle de la route.
+     *
+     * @return Une chaîne de caractères représentant la route.
+     */
     @Override
     public String toString() {
         String affiche = "";
