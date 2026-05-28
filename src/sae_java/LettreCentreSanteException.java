@@ -5,11 +5,11 @@
 package sae_java;
 
 /**
- *  
+ *   
  * @author ilies
  */
 public class LettreCentreSanteException extends Exception{
     public LettreCentreSanteException(String message){
-        super();
+        super(message);
     }
 }
