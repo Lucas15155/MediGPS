@@ -13,7 +13,7 @@ import java.util.ArrayList;
  */
 public class Etablissement {
 
-    private final Centre_Sante centre;
+    private final Type_Centre centre;
     private final String id;
     private final ArrayList<Route> routes; 
 
@@ -23,7 +23,7 @@ public class Etablissement {
      * @param centre Le type de centre de santé associé.
      * @param id     L'identifiant unique du sommet (ex: "S1").
      */
-    public Etablissement(Centre_Sante centre, String id) {
+    public Etablissement(Type_Centre centre, String id) {
         this.centre = centre;
         this.id = id;
         this.routes = new ArrayList<>();
@@ -34,7 +34,7 @@ public class Etablissement {
      *
      * @return Le type de centre de santé.
      */
-    public Centre_Sante getCentre() {
+    public Type_Centre getCentre() {
         return this.centre;
     }
     
@@ -76,9 +76,9 @@ public class Etablissement {
      * @return La lettre représentative du centre.
      */
     public String getLettre() {           //renvoie la lettre du centre de sante selon son type je peux mettre Switch/case
-        if (centre == Centre_Sante.maternite) {
+        if (centre == Type_Centre.maternite) {
             return "M";
-        } else if (centre == Centre_Sante.operatoire) {
+        } else if (centre == Type_Centre.operatoire) {
             return "O";
         } else {
             return "N";

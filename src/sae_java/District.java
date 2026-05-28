@@ -64,14 +64,14 @@ public class District {
      *
      * @return Une valeur de l'énumération Centre_Sante
      */
-    private static Centre_Sante tirertype() {
+    private static Type_Centre tirertype() {
         double tirage = Math.random();
         if (tirage < 3.0 / 5.0) {
-            return Centre_Sante.maternite;
+            return Type_Centre.maternite;
         } else if (tirage < 4.0 / 5.0) {
-            return Centre_Sante.operatoire;
+            return Type_Centre.operatoire;
         } else {
-            return Centre_Sante.nutrition;
+            return Type_Centre.nutrition;
         }
     }
 
@@ -96,7 +96,7 @@ public class District {
      */
     public void genererGraph(int nbSommets) {
         for (int i = 0; i < nbSommets; i++) {
-            Centre_Sante type = tirertype();
+            Type_Centre type = tirertype();
             String id = "S" + (i + 1);
             Etablissement s = new Etablissement(type, id);
             this.ajouterSommet(s);
@@ -128,18 +128,18 @@ public class District {
      * @return La valeur de l'énumération correspondante.
      * @throws LettreCentreSanteException Si la lettre est nulle ou non valide.
      */
-    private static Centre_Sante convertirLettreEnum(String lettre) throws LettreCentreSanteException {   //passez en private plus tard
+    private static Type_Centre convertirLettreEnum(String lettre) throws LettreCentreSanteException {   //passez en private plus tard
 
         if (lettre == null) {
             throw new LettreCentreSanteException("La lettre ne peut pas etre nul ");
         }
         switch (lettre) {
             case "M":
-                return Centre_Sante.maternite;
+                return Type_Centre.maternite;
             case "N":
-                return Centre_Sante.nutrition;
+                return Type_Centre.nutrition;
             case "O":
-                return Centre_Sante.operatoire;
+                return Type_Centre.operatoire;
             default:
                 throw new LettreCentreSanteException("Lettre invalide ");
         }
@@ -160,7 +160,7 @@ public class District {
         String idSource = colonnes[0];      //premiere colonne du fichier c'est l'idSommet
         String typeLettre = colonnes[1];    //deuxième colonne cest le type de centre
 
-        Centre_Sante typeCentre_sante = District.convertirLettreEnum(typeLettre);
+        Type_Centre typeCentre_sante = District.convertirLettreEnum(typeLettre);
 
         Etablissement sommetSource = new Etablissement(typeCentre_sante, idSource); //Pour chaque ligne, je crée le centre de santé correspondant avec son nom et son type
         boolean ligneValide = true;
