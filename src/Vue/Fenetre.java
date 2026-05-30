@@ -244,14 +244,14 @@ public class Fenetre extends JFrame {
                     }
                 }
 
-                for (Edge route : this.carteVisuelle.getEdgeSet()) {
-                    Node sourceRoute = route.getNode0();
-                    Node destinationRoute = route.getNode1();
+                for (Edge edge : this.carteVisuelle.getEdgeSet()) {
+                    Node sourceRoute = edge.getNode0();
+                    Node destinationRoute = edge.getNode1();
 
                     if (sourceRoute.hasAttribute("ui.hide") || destinationRoute.hasAttribute("ui.hide")) {
-                        route.setAttribute("ui.hide");
+                        edge.setAttribute("ui.hide");
                     } else {
-                        route.removeAttribute("ui.hide");
+                        edge.removeAttribute("ui.hide");
                     }
 
                 }
@@ -272,33 +272,33 @@ public class Fenetre extends JFrame {
 
                 boolean auMoinsUnCoche = afficherDistance || afficherDuree || afficherFiabilite;
 
-                for (Edge route : this.carteVisuelle.getEdgeSet()) {
+                for (Edge edge : this.carteVisuelle.getEdgeSet()) {
 
                     if (!auMoinsUnCoche) {
-                        route.setAttribute("ui.label", "");
+                        edge.setAttribute("ui.label", "");
                     } else {
 
                         StringBuilder texteLabel = new StringBuilder();
 
                         if (afficherDistance) {
-                            texteLabel.append(route.getAttribute("distance").toString()).append(" km ");
+                            texteLabel.append(edge.getAttribute("distance").toString()).append(" km ");
                         }
 
                         if (afficherDuree) {
                             if (texteLabel.length() > 0) {
                                 texteLabel.append("- ");
                             }
-                            texteLabel.append(route.getAttribute("duree").toString()).append(" min ");
+                            texteLabel.append(edge.getAttribute("duree").toString()).append(" min ");
                         }
 
                         if (afficherFiabilite) {
                             if (texteLabel.length() > 0) {
                                 texteLabel.append("- ");
                             }
-                            texteLabel.append("Fiab: ").append(route.getAttribute("fiabilite").toString());
+                            texteLabel.append("Fiab: ").append(edge.getAttribute("fiabilite").toString());
                         }
 
-                        route.setAttribute("ui.label", texteLabel.toString().trim());
+                        edge.setAttribute("ui.label", texteLabel.toString().trim());
                     }
                 }
             }
@@ -340,12 +340,11 @@ public class Fenetre extends JFrame {
                 String texteSaisi = tfRouteRisque.getText();
                 try {
                     
-                    texteSaisi = texteSaisi.replace(",", "."); //Si l'utilisateur tape , au lieu de .
-                    double seuilRisque = Double.parseDouble(texteSaisi);
+                    int seuilRisque = Integer.parseInt(texteSaisi);
 
                     for (Edge routes : carteVisuelle.getEdgeSet()) {
 
-                        Double fiabilite = (Double) routes.getAttribute("fiabilite");
+                        Integer fiabilite = (int) routes.getAttribute("fiabilite");
 
                         if (fiabilite != null) {
                             if (fiabilite <= seuilRisque) {
