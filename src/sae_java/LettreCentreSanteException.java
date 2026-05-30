@@ -5,11 +5,18 @@
 package sae_java;
 
 /**
- *
- * @author ilies
+ * Exception personnalisée levée lorsqu'une lettre lue dans un fichier d'entrée
+ * ne correspond à aucun type de centre de santé connu.
+ * * @author ilies
  */
 public class LettreCentreSanteException extends Exception{
+    
+    /**
+     * Constructeur de l'exception avec un message détaillé.
+     *
+     * @param message Message décrivant la cause précise de l'erreur.
+     */
     public LettreCentreSanteException(String message){
-        super();
+        super(message);
     }
 }
