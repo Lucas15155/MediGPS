@@ -12,7 +12,7 @@ package sae_java;
 public class Route {
 
     private final String destination;
-    private final double fiabilite;
+    private final int fiabilite;
     private final int distance;
     private final int duree;
 
@@ -25,7 +25,7 @@ public class Route {
      * @param distance    La distance en kilomètres.
      * @param duree       La durée du trajet en minutes.
      */
-    public Route(String destination, double fiabilite, int distance, int duree) {
+    public Route(String destination, int fiabilite, int distance, int duree) {
         this.destination = destination;
         this.fiabilite = fiabilite;
         this.distance = distance;
@@ -46,7 +46,7 @@ public class Route {
      *
      * @return La fiabilité.
      */
-    public double getFiabilite() {
+    public int getFiabilite() {
         return this.fiabilite;
     }
 
