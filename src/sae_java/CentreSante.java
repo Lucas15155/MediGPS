@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * Un sommet possède un identifiant unique, un type de centre de santé, et une liste de routes sortantes.
  * * @author ilies
  */
-public class Etablissement {
+public class CentreSante {
 
     private final Type_Centre centre;
     private final String id;
@@ -23,7 +23,7 @@ public class Etablissement {
      * @param centre Le type de centre de santé associé.
      * @param id     L'identifiant unique du sommet (ex: "S1").
      */
-    public Etablissement(Type_Centre centre, String id) {
+    public CentreSante(Type_Centre centre, String id) {
         this.centre = centre;
         this.id = id;
         this.routes = new ArrayList<>();

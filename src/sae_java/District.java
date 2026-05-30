@@ -18,14 +18,14 @@ import java.util.ArrayList;
  */
 public class District {
 
-    private final ArrayList<Etablissement> sommets;
+    private final ArrayList<CentreSante> lstCentre;
 
     /**
      * Constructeur par défaut de la classe Graphe. Initialise une structure de
      * liste vide pour stocker les sommets.
      */
     public District() {
-        this.sommets = new ArrayList<>();
+        this.lstCentre = new ArrayList<>();
     }
 
     /**
@@ -34,8 +34,8 @@ public class District {
      *
      * @return L'ArrayList contenant l'intégralité des sommets.
      */
-    public ArrayList<Etablissement> getSommets() {
-        return this.sommets;
+    public ArrayList<CentreSante> getSommets() {
+        return this.lstCentre;
     }
 
     /**
@@ -43,8 +43,8 @@ public class District {
      *
      * @param s Le sommet à ajouter.
      */
-    public void ajouterSommet(Etablissement s) {
-        this.sommets.add(s);
+    public void ajouterCentre(CentreSante s) {
+        this.lstCentre.add(s);
     }
 
     /**
@@ -52,7 +52,7 @@ public class District {
      *
      * @param val_min La valeur minimale possible.
      * @param val_max La valeur maximale possible.
-     * @return
+     * @return Un entier compris entre le minimun et le maximun
      */
     public static int ent_alea(int val_min, int val_max) {
         return val_min + (int) (Math.random() * (1 + val_max - val_min));
@@ -87,22 +87,22 @@ public class District {
     }
 
     /**
-     * Génère de manière totalement aléatoire un graphe contenant un nombre données de sommets.
-    
+     * Génère de manière totalement aléatoire un graphe contenant un nombre
+     * données de sommets.
+     *
      *
      *
      * @param nbSommets Le nombre de sommets à générer
-     * @return L'objet Graph d'affichage configuré et peuplé
      */
-    public void genererGraph(int nbSommets) {
+    public void genererDistrict(int nbSommets) {
         for (int i = 0; i < nbSommets; i++) {
             Type_Centre type = tirertype();
             String id = "S" + (i + 1);
-            Etablissement s = new Etablissement(type, id);
-            this.ajouterSommet(s);
+            CentreSante s = new CentreSante(type, id);
+            this.ajouterCentre(s);
         }
         for (int i = 0; i < nbSommets; i++) {
-            Etablissement source = this.sommets.get(i);
+            CentreSante source = this.lstCentre.get(i);
 
             for (int j = i + 1; j < nbSommets; j++) {
                 if (Math.random() < 1.0 / 5.0) { // 20% de chance de créer une route
@@ -162,8 +162,8 @@ public class District {
 
         Type_Centre typeCentre_sante = District.convertirLettreEnum(typeLettre);
 
-        Etablissement sommetSource = new Etablissement(typeCentre_sante, idSource); //Pour chaque ligne, je crée le centre de santé correspondant avec son nom et son type
-        boolean ligneValide = true;
+        CentreSante sommetSource = new CentreSante(typeCentre_sante, idSource); //Pour chaque ligne, je crée le centre de santé correspondant avec son nom et son type
+        boolean ligneEstValide = true;
 
         for (int i = 2; i < colonnes.length; i++) {     //pour chaque colonnes voir si il y une destinations si oui decouper en 3 colonnes
             String valeurRoute = colonnes[i];
@@ -184,12 +184,12 @@ public class District {
                 System.out.println("Lien trouve");
             } else {
                 System.out.println("Format inattendue");
-                ligneValide = false;
+                ligneEstValide = false;
                 break;
             }
         }
-        if (ligneValide) {
-            nouveauGraphe.ajouterSommet(sommetSource);
+        if (ligneEstValide) {
+            nouveauGraphe.ajouterCentre(sommetSource);
         }
     }
 
@@ -227,18 +227,36 @@ public class District {
     }
 
     /**
-     * * Retourne une représentation textuelle des sommets et de leurs routes
-     * sous forme de liste.
+     * Retourne une représentation textuelle des sommets et de leurs routes sous
+     * forme de liste.
      *
      * @return Chaîne de caractères.
      */
     @Override
     public String toString() {  //affichage console
         StringBuilder sb = new StringBuilder();
-        sb.append("Graphe avec ").append(sommets.size()).append(" sommets :\n");
-        for (Etablissement s : sommets) {
+        sb.append("Graphe avec ").append(lstCentre.size()).append(" sommets :\n");
+        for (CentreSante s : lstCentre) {
             sb.append("  ").append(s).append("\n");
         }
         return sb.toString();
     }
+
+    /**
+     *
+     * @param type du centre de sante a compté
+     * @return un entier qui represente le nombre de centre d'un type dans un
+     * District
+     */
+    public int CompterCentreParType(Type_Centre type) {
+        int compteur = 0;
+
+        for (CentreSante e : this.lstCentre) {
+            if (e.getCentre() == type) {
+                compteur++;
+            }
+        }
+        return compteur;
+    }
+
 }
