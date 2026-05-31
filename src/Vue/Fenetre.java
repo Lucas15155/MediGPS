@@ -10,8 +10,6 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -19,11 +17,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -53,7 +49,7 @@ public class Fenetre extends JFrame {
     private JButton btnGenerer, btnCharger, btnFiltrer, btnCalculer;
     private JTextField tfRouteRisque, tfCentreDepart, tfCentreArrivee;
 
-    private JLabel lblNbMaternite, lblNbOperatoire, lblNutrition;
+    private JLabel lblNbMaternite, lblNbOperatoire, lblNutrition, lblResultatRapide, lblResultatSur;
     private JCheckBox checkMaternite, checkOperatoire, checkNutrition;
     private JCheckBox checkDistance, checkDuree, checkFiabilite;
 
@@ -133,7 +129,7 @@ public class Fenetre extends JFrame {
 
         //PanelStats
         JPanel panelStats = new JPanel(new GridBagLayout());
-        panelStats.setBorder(new EmptyBorder(10, 10, 10, 10));
+        panelStats.setBorder(new EmptyBorder(0, 10, 10, 10));
         GridBagConstraints gcStats = new GridBagConstraints();
         gcStats.gridx = 0;
         gcStats.anchor = GridBagConstraints.WEST;
@@ -186,7 +182,7 @@ public class Fenetre extends JFrame {
         tfCentreDepart = new JTextField("Centre de départ", 15);
         tfCentreArrivee = new JTextField("Centre d'arrivée", 15);
         btnCalculer = new JButton("Calculer le chemin");
-        btnCalculer.setBackground(Color.yellow);
+        btnCalculer.setBackground(Color.ORANGE);
 
         gcStats.gridy = 9;
         panelStats.add(tfCentreDepart, gcStats);
@@ -197,6 +193,17 @@ public class Fenetre extends JFrame {
         gcStats.gridy = 11;
         panelStats.add(btnCalculer, gcStats);
 
+        lblResultatRapide = new JLabel("Trajet rapide : (min)");
+        lblResultatRapide.setForeground(new Color(0, 139, 139));
+        lblResultatSur = new JLabel("Trajet sur : (min)");
+        lblResultatSur.setForeground(Color.MAGENTA);
+
+        gcStats.gridy = 12;
+        panelStats.add(lblResultatRapide, gcStats);
+
+        gcStats.gridy = 13;
+        panelStats.add(lblResultatSur, gcStats);
+
         this.pack();
 
     }
@@ -206,7 +213,7 @@ public class Fenetre extends JFrame {
      */
     private void initEcouteurs() {
         btnGenerer.addActionListener((e) -> {
-           
+
             int nbSommets = (int) spinnerNbSommets.getValue();
             graphe = new District();
             graphe.genererDistrict(nbSommets);
@@ -379,15 +386,52 @@ public class Fenetre extends JFrame {
                 }
 
                 CalculateurItineraire calculateur = new CalculateurItineraire(this.carteVisuelle);
-                Path chemin = calculateur.calculerCheminPlusRapide(departChoisi, arriveeChoisie);
+                Path cheminRapide = calculateur.calculerCheminPlusRapide(departChoisi, arriveeChoisie);
+                Path cheminSurEtRapide = calculateur.calculerCheminPlusSurEtRapide(departChoisi, arriveeChoisie);
 
-                if (chemin.empty()) {
+                if (cheminRapide.empty()) {
                     JOptionPane.showMessageDialog(this, "Aucun itinéraire possible entre ces deux centres.", "Information", JOptionPane.INFORMATION_MESSAGE);
 
                 } else {
-                    for (Edge edge : chemin.getEdgePath()) {
-                        edge.setAttribute("ui.style", "fill-color: yellow; size: 4px;");
+                    for (Edge edge : cheminRapide.getEdgePath()) {
+                        edge.setAttribute("ui.style", "fill-color: rgb(0, 139, 139); size: 4px;");
+                        edge.setAttribute("estRapide", true); // utilie pour le 2eme itineraire
+                    }
+                    boolean contientRouteInterdite = false;
 
+                    for (Edge route : cheminSurEtRapide.getEdgePath()) {
+                        double poids = ((Number) route.getAttribute("dureeEstimee")).doubleValue();
+                        if (poids >= 999999.0) {
+                            contientRouteInterdite = true;
+                        }
+
+                        if (route.hasAttribute("estRapide")) {
+                            route.setAttribute("ui.style", "fill-color: orange; size: 6px; z-index: 10;");
+                        } else {
+                            route.setAttribute("ui.style", "fill-color: magenta; size: 4px; z-index: 6;");
+                        }
+                    }
+                    for (Edge route : carteVisuelle.getEdgeSet()) {
+                        route.removeAttribute("estRapide");
+                    }
+
+                    double dureeTotaleRapide = 0;
+                    for (Edge edge : cheminRapide.getEdgePath()) {
+                        dureeTotaleRapide += ((Number) edge.getAttribute("duree")).doubleValue();
+                    }
+                    double dureeTotaleSurEtRapide = 0;
+                    for (Edge edge : cheminSurEtRapide.getEdgePath()) {
+                        dureeTotaleSurEtRapide += ((Number) edge.getAttribute("dureeEstimee")).doubleValue();
+                    }
+
+                    lblResultatRapide.setText("Trajet Rapide : " + dureeTotaleRapide + " min");
+                    lblResultatSur.setText("Trajet Sûr : " + dureeTotaleSurEtRapide + " min");
+
+                    if (contientRouteInterdite) {
+                        JOptionPane.showMessageDialog(this,
+                                "Impossible de trouver un chemin totalement sûr. Le seul itinéraire possible emprunte une route dont la fiabilité est dangereuse(< 2.5).",
+                                "Alerte Sécurité",
+                                JOptionPane.WARNING_MESSAGE);
                     }
                 }
 
@@ -396,6 +440,7 @@ public class Fenetre extends JFrame {
             }
 
         });
+
     }
 
     /**
@@ -456,5 +501,4 @@ public class Fenetre extends JFrame {
         }
 
     }
-
 }
