@@ -11,7 +11,7 @@ import sae_java.CentreSante;
 public class VisualiationDistrict {
 
     public static Graph extraireGraphStream(District modele) {
-        Graph graphAffichage = new SingleGraph("MediGPS_Visual");
+        Graph graphAffichage = new SingleGraph("MediGPS");
 
            graphAffichage.setAttribute("ui.stylesheet",
                 "node { size: 15px; fill-color: #4A90D9; text-mode: normal; text-size: 13px; } "

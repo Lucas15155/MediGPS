@@ -8,6 +8,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JButton;
@@ -26,8 +28,10 @@ import javax.swing.border.EmptyBorder;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import org.graphstream.graph.Path;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
+import sae_java.CalculateurItineraire;
 import sae_java.District;
 import sae_java.LettreCentreSanteException;
 import sae_java.Type_Centre;
@@ -46,8 +50,8 @@ public class Fenetre extends JFrame {
     private District graphe;
     private JSpinner spinnerNbSommets;
     private JPanel panelGraphe;
-    private JButton btnGenerer, btnCharger, btnFiltrer;
-    private JTextField tfRouteRisque;
+    private JButton btnGenerer, btnCharger, btnFiltrer, btnCalculer;
+    private JTextField tfRouteRisque, tfCentreDepart, tfCentreArrivee;
 
     private JLabel lblNbMaternite, lblNbOperatoire, lblNutrition;
     private JCheckBox checkMaternite, checkOperatoire, checkNutrition;
@@ -94,7 +98,7 @@ public class Fenetre extends JFrame {
         btnCharger = new JButton("Charger CSV");
 
         tfRouteRisque = new JTextField("Saisissez une valeur", 13);
-        
+
         btnFiltrer = new JButton("Filtrer");
 
         gc.gridx = 0;
@@ -126,7 +130,6 @@ public class Fenetre extends JFrame {
 
         add(panelControles, BorderLayout.NORTH);
         add(panelGraphe, BorderLayout.CENTER);
-        this.pack();
 
         //PanelStats
         JPanel panelStats = new JPanel(new GridBagLayout());
@@ -179,6 +182,23 @@ public class Fenetre extends JFrame {
 
         gcStats.gridy = 8;
         panelStats.add(checkFiabilite, gcStats);
+
+        tfCentreDepart = new JTextField("Centre de départ", 15);
+        tfCentreArrivee = new JTextField("Centre d'arrivée", 15);
+        btnCalculer = new JButton("Calculer le chemin");
+        btnCalculer.setBackground(Color.yellow);
+
+        gcStats.gridy = 9;
+        panelStats.add(tfCentreDepart, gcStats);
+
+        gcStats.gridy = 10;
+        panelStats.add(tfCentreArrivee, gcStats);
+
+        gcStats.gridy = 11;
+        panelStats.add(btnCalculer, gcStats);
+
+        this.pack();
+
     }
 
     /**
@@ -186,7 +206,7 @@ public class Fenetre extends JFrame {
      */
     private void initEcouteurs() {
         btnGenerer.addActionListener((e) -> {
-
+           
             int nbSommets = (int) spinnerNbSommets.getValue();
             graphe = new District();
             graphe.genererDistrict(nbSommets);
@@ -308,38 +328,11 @@ public class Fenetre extends JFrame {
         checkDuree.addActionListener(ecouteurLabels);
         checkFiabilite.addActionListener(ecouteurLabels);
 
-        tfRouteRisque.addMouseListener(new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (tfRouteRisque.getText().equals("Saisissez une valeur")) {
-                    tfRouteRisque.setText("");
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-
-        });
-
         btnFiltrer.addActionListener((e) -> {
             if (this.carteVisuelle != null) {
                 String texteSaisi = tfRouteRisque.getText();
                 try {
-                    
+
                     int seuilRisque = Integer.parseInt(texteSaisi);
 
                     for (Edge routes : carteVisuelle.getEdgeSet()) {
@@ -356,17 +349,53 @@ public class Fenetre extends JFrame {
                             }
                         }
                     }
-                } catch (NumberFormatException ex){
-                    JOptionPane.showMessageDialog(this, "Veuilez saisir une valeur valide (ex: 0.5)", "Erreur de saisie", JOptionPane.WARNING_MESSAGE);
-                    
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Veuilez saisir une valeur valide (ex: 5)", "Erreur de saisie", JOptionPane.WARNING_MESSAGE);
+
                     for (Edge route : this.carteVisuelle.getEdgeSet()) {
                         route.setAttribute("ui.hide");
-                        
+
                     }
                 }
             }
         });
 
+        tfRouteRisque.addFocusListener(new ChampsTexteEcouteur("Saisissez la fiabilité"));
+        tfCentreDepart.addFocusListener(new ChampsTexteEcouteur("Centre de départ"));
+        tfCentreArrivee.addFocusListener(new ChampsTexteEcouteur("Centre d'arrivée"));
+
+        btnCalculer.addActionListener((e) -> {
+            String departChoisi = tfCentreDepart.getText().trim();
+            String arriveeChoisie = tfCentreArrivee.getText().trim();
+
+            if (departChoisi.isEmpty() || arriveeChoisie.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Veuillez remplir les champs de départ et d'arrivée.",
+                        "Champs manquants", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            try {
+                for (Edge route : carteVisuelle.getEachEdge()) {
+                    route.setAttribute("ui.style", "fill-color: gray; size: 1px; z-index: 0;");
+                }
+
+                CalculateurItineraire calculateur = new CalculateurItineraire(this.carteVisuelle);
+                Path chemin = calculateur.calculerCheminPlusRapide(departChoisi, arriveeChoisie);
+
+                if (chemin.empty()) {
+                    JOptionPane.showMessageDialog(this, "Aucun itinéraire possible entre ces deux centres.", "Information", JOptionPane.INFORMATION_MESSAGE);
+
+                } else {
+                    for (Edge edge : chemin.getEdgePath()) {
+                        edge.setAttribute("ui.style", "fill-color: yellow; size: 4px;");
+
+                    }
+                }
+
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
+            }
+
+        });
     }
 
     /**
@@ -399,6 +428,33 @@ public class Fenetre extends JFrame {
             lblNutrition.setText("Nombre de nutrition : " + graphe.CompterCentreParType(Type_Centre.nutrition));
             lblNbOperatoire.setText("Nombre de bloc opératoire : " + graphe.CompterCentreParType(Type_Centre.operatoire));
         }
+    }
+
+    private class ChampsTexteEcouteur implements FocusListener {
+
+        private String texteParDefaut;
+
+        public ChampsTexteEcouteur(String texte) {
+            this.texteParDefaut = texte;
+        }
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            JTextField champs = (JTextField) e.getSource();
+
+            if (champs.getText().equals(this.texteParDefaut));
+            champs.setText("");
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            JTextField champs = (JTextField) e.getSource();
+            if (champs.getText().trim().isEmpty()) {
+                champs.setText(this.texteParDefaut);
+            }
+
+        }
+
     }
 
 }
