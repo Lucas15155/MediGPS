@@ -4,6 +4,7 @@
  */
 package sae_java_modèle;
 
+import java.util.HashMap;
 import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -30,6 +31,23 @@ public class CalculateurItineraire {
         this.graphDistrict = graphe;
     }
 
+    public Path calculerChemin(String idDepart, String idArrivee, String attribut) throws IllegalArgumentException {
+        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, "resultat", attribut);
+        dijkstra.init(this.graphDistrict);
+        Node centreDepart = this.graphDistrict.getNode(idDepart);
+        Node centreArrivee = this.graphDistrict.getNode(idArrivee);
+
+        if (centreDepart == null || centreArrivee == null) {
+            throw new IllegalArgumentException("Le centre de départ ou d'arrivée n'existe pas");
+        }
+        dijkstra.setSource(centreDepart);
+        dijkstra.compute();
+        Path cheminPlusCourt = dijkstra.getPath(centreArrivee);
+        dijkstra.clear();
+
+        return cheminPlusCourt;
+    }
+
     /**
      * Calcule le chelin le plus rapide entre deux points la durée des routes.
      *
@@ -40,25 +58,7 @@ public class CalculateurItineraire {
      * graphe.
      */
     public Path calculerCheminPlusRapide(String idCentreDepart, String idCentreArrivee) throws IllegalArgumentException {
-
-        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, "resultat", "duree");
-        dijkstra.init(this.graphDistrict);
-
-        Node centreDepart = this.graphDistrict.getNode(idCentreDepart);
-        Node centreArrivee = this.graphDistrict.getNode(idCentreArrivee);
-
-        if (centreDepart == null || centreArrivee == null) {
-            throw new IllegalArgumentException("Le centre de départ ou d'arrivée n'existe pas");
-        }
-
-        dijkstra.setSource(centreDepart);
-        dijkstra.compute();
-
-        Path cheminPlusCourt = dijkstra.getPath(centreArrivee);
-
-        dijkstra.clear();
-
-        return cheminPlusCourt;
+        return calculerChemin(idCentreDepart, idCentreArrivee, "duree");
     }
 
     /**
@@ -73,43 +73,23 @@ public class CalculateurItineraire {
      */
     public Path calculerCheminPlusSurEtRapide(String idCentreDepart, String idCentreArrivee) throws IllegalArgumentException {
         for (Edge route : this.graphDistrict.getEdgeSet()) {
-
-            // Ce qu'il faut mettre (La méthode robuste) :
             double duree = ((Number) route.getAttribute("duree")).doubleValue();
             double fiabilite = ((Number) route.getAttribute("fiabilite")).doubleValue(); //On les met en number pour pouvoir les convertir en double 
-
             if (fiabilite < 2.5) {
                 route.setAttribute("dureeEstimee", 999999.0); // bloque la route elle ne va jamais etre utilise
             } else {
                 double dureeEstimee = duree * (20.0 - fiabilite) / 10.0;
                 route.setAttribute("dureeEstimee", dureeEstimee);
             }
-
         }
-        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, "resultat", "dureeEstimee");
-        dijkstra.init(this.graphDistrict);
-
-        Node centreDepart = this.graphDistrict.getNode(idCentreDepart);
-        Node centreArrivee = this.graphDistrict.getNode(idCentreArrivee);
-
-        if (centreDepart == null || centreArrivee == null) {
-            throw new IllegalArgumentException("Le centre de départ ou d'arrivée n'existe pas");
-        }
-
-        dijkstra.setSource(centreDepart);
-        dijkstra.compute();
-
-        Path cheminPlusCourt = dijkstra.getPath(centreArrivee);
-
-        dijkstra.clear();
-
-        return cheminPlusCourt;
+        return calculerChemin(idCentreDepart, idCentreArrivee, "dureeEstimee");
     }
-    
+
     /**
      * Calcule la somme de la durée du chemin
-     * @param chemin 
-     * @param attribut 
+     *
+     * @param chemin
+     * @param attribut
      * @return Un double La durée totale du chemin
      */
     public double CalculerDureeTotale(Path chemin, String attribut) {
@@ -117,6 +97,21 @@ public class CalculateurItineraire {
         for (Edge edge : chemin.getEdgePath()) {
             dureeTotale += ((Number) edge.getAttribute(attribut)).doubleValue();
         }
-        return dureeTotale ;
+        return dureeTotale;
+    }
+
+    public HashMap<Node, Double> CalculerPoidsVersTousCentre(String idDepart, String attribut) {
+        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, "resultat", attribut);
+        dijkstra.init(this.graphDistrict);
+        dijkstra.setSource(this.graphDistrict.getNode(idDepart));
+        dijkstra.compute();
+        HashMap<Node, Double> mapPoids = new HashMap<>();
+        for (Node centre : this.graphDistrict) {
+            if (!centre.getId().equals(idDepart)) {
+                mapPoids.put(centre, dijkstra.getPathLength(centre));
+            }
+        }
+        dijkstra.clear();
+        return mapPoids;
     }
 }
