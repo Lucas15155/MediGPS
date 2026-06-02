@@ -1,4 +1,4 @@
-package sae_java;
+package sae_java_modèle;
 
 import Vue.Fenetre;
 

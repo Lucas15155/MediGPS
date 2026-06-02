@@ -27,10 +27,10 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.Path;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
-import sae_java.CalculateurItineraire;
-import sae_java.District;
-import sae_java.LettreCentreSanteException;
-import sae_java.Type_Centre;
+import sae_java_modèle.CalculateurItineraire;
+import sae_java_modèle.District;
+import sae_java_modèle.LettreCentreSanteException;
+import sae_java_modèle.Type_Centre;
 
 /**
  * Fenêtre principale de l'application MediGPS (Interface Graphique Swing).
@@ -46,7 +46,7 @@ public class Fenetre extends JFrame {
     private District graphe;
     private JSpinner spinnerNbSommets;
     private JPanel panelGraphe;
-    private JButton btnGenerer, btnCharger, btnFiltrer, btnCalculer;
+    private JButton btnGenerer, btnCharger, btnFiltrer, btnCalculer, btnReintialiser;
     private JTextField tfRouteRisque, tfCentreDepart, tfCentreArrivee;
 
     private JLabel lblNbMaternite, lblNbOperatoire, lblNutrition, lblResultatRapide, lblResultatSur;
@@ -166,6 +166,10 @@ public class Fenetre extends JFrame {
         panelStats.add(checkOperatoire, gcStats);
         add(panelStats, BorderLayout.WEST);
 
+        btnReintialiser = new JButton("Réintialiser");
+        gc.gridx = 6;
+        panelControles.add(btnReintialiser, gc);
+
         checkDistance = new JCheckBox("Distance (km)", true);
         checkDuree = new JCheckBox("Durée (min)", false);
         checkFiabilite = new JCheckBox("Fiabilité", false);
@@ -205,7 +209,6 @@ public class Fenetre extends JFrame {
         panelStats.add(lblResultatSur, gcStats);
 
         this.pack();
-
     }
 
     /**
@@ -241,53 +244,20 @@ public class Fenetre extends JFrame {
             }
         });
 
-        ActionListener ecouteurFiltre = e -> {
+        checkMaternite.addActionListener((e) -> {
+            StyleGraphe.AfficherCentreParType(this.carteVisuelle, "maternite", checkMaternite.isSelected());
+            StyleGraphe.AfficherOuMasquerRoutes(this.carteVisuelle);
+        });
 
-            if (this.carteVisuelle != null) {
-                Object source = e.getSource();
-                String typeCible = "";
-                boolean afficher = true;
+        checkNutrition.addActionListener((e) -> {
+            StyleGraphe.AfficherCentreParType(this.carteVisuelle, "nutrition", checkNutrition.isSelected());
+            StyleGraphe.AfficherOuMasquerRoutes(this.carteVisuelle);
+        });
 
-                if (source == checkMaternite) {
-                    typeCible = "maternite";
-                    afficher = checkMaternite.isSelected();
-                } else if (source == checkOperatoire) {
-                    typeCible = "operatoire";
-                    afficher = checkOperatoire.isSelected();
-                } else if (source == checkNutrition) {
-                    typeCible = "nutrition";
-                    afficher = checkNutrition.isSelected();
-                }
-
-                for (Node noeud : carteVisuelle) {
-                    String typeCSS = (String) noeud.getAttribute("ui.class");
-
-                    if (typeCSS != null && typeCSS.equals(typeCible)) {
-                        if (afficher) {
-                            noeud.removeAttribute("ui.hide");
-                        } else {
-                            noeud.setAttribute("ui.hide");
-                        }
-                    }
-                }
-
-                for (Edge edge : this.carteVisuelle.getEdgeSet()) {
-                    Node sourceRoute = edge.getNode0();
-                    Node destinationRoute = edge.getNode1();
-
-                    if (sourceRoute.hasAttribute("ui.hide") || destinationRoute.hasAttribute("ui.hide")) {
-                        edge.setAttribute("ui.hide");
-                    } else {
-                        edge.removeAttribute("ui.hide");
-                    }
-
-                }
-            }
-        };
-
-        checkMaternite.addActionListener(ecouteurFiltre);
-        checkOperatoire.addActionListener(ecouteurFiltre);
-        checkNutrition.addActionListener(ecouteurFiltre);
+        checkOperatoire.addActionListener((e) -> {
+            StyleGraphe.AfficherCentreParType(this.carteVisuelle, "operatoire", checkOperatoire.isSelected());
+            StyleGraphe.AfficherOuMasquerRoutes(this.carteVisuelle);
+        });
 
         ActionListener ecouteurLabels = e -> {
             if (this.carteVisuelle != null) {
@@ -375,28 +345,46 @@ public class Fenetre extends JFrame {
             String departChoisi = tfCentreDepart.getText().trim();
             String arriveeChoisie = tfCentreArrivee.getText().trim();
 
-            if (departChoisi.isEmpty() || arriveeChoisie.isEmpty()) {
+            if (departChoisi.isEmpty() || departChoisi.equals("Centre de départ") || arriveeChoisie.equals("Centre d'arrivée") || arriveeChoisie.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Veuillez remplir les champs de départ et d'arrivée.",
                         "Champs manquants", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            try {
-                for (Edge route : carteVisuelle.getEachEdge()) {
-                    route.setAttribute("ui.style", "fill-color: gray; size: 1px; z-index: 0;");
+
+            String idDepartReel = null;
+            String idArriveeReel = null;
+
+            for (Node n : carteVisuelle) {
+                String label = (String) n.getAttribute("ui.label");
+                if (label != null && label.equalsIgnoreCase(departChoisi)) {
+                    idDepartReel = n.getId();
                 }
+                if (label != null && label.equalsIgnoreCase(arriveeChoisie)) {
+                    idArriveeReel = n.getId();
+                }
+            }
+
+            if (idDepartReel == null || idArriveeReel == null) {
+                JOptionPane.showMessageDialog(this,
+                        "Le centre de départ ou d'arrivée saisi n'existe pas sur la carte.",
+                        "Erreur de saisie",
+                        JOptionPane.ERROR_MESSAGE);
+                return; // On arrête tout si le centre n'existe pas
+            }
+            try {
+                //Nettoyage de la carte
+                StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
 
                 CalculateurItineraire calculateur = new CalculateurItineraire(this.carteVisuelle);
-                Path cheminRapide = calculateur.calculerCheminPlusRapide(departChoisi, arriveeChoisie);
-                Path cheminSurEtRapide = calculateur.calculerCheminPlusSurEtRapide(departChoisi, arriveeChoisie);
+                Path cheminRapide = calculateur.calculerCheminPlusRapide(idDepartReel, idArriveeReel);
+                Path cheminSurEtRapide = calculateur.calculerCheminPlusSurEtRapide(idDepartReel, idArriveeReel);
 
-                if (cheminRapide.empty()) {
+                if (cheminRapide.empty() ) {
                     JOptionPane.showMessageDialog(this, "Aucun itinéraire possible entre ces deux centres.", "Information", JOptionPane.INFORMATION_MESSAGE);
 
                 } else {
-                    for (Edge edge : cheminRapide.getEdgePath()) {
-                        edge.setAttribute("ui.style", "fill-color: rgb(0, 139, 139); size: 4px;");
-                        edge.setAttribute("estRapide", true); // utilie pour le 2eme itineraire
-                    }
+                    StyleGraphe.appliquerStyleTrajetRapide(cheminRapide);
+
                     boolean contientRouteInterdite = false;
 
                     for (Edge route : cheminSurEtRapide.getEdgePath()) {
@@ -404,28 +392,19 @@ public class Fenetre extends JFrame {
                         if (poids >= 999999.0) {
                             contientRouteInterdite = true;
                         }
+                    }
+                    StyleGraphe.appliquerStyleTrajetSur(cheminSurEtRapide);
 
-                        if (route.hasAttribute("estRapide")) {
-                            route.setAttribute("ui.style", "fill-color: orange; size: 6px; z-index: 10;");
-                        } else {
-                            route.setAttribute("ui.style", "fill-color: magenta; size: 4px; z-index: 6;");
-                        }
+                    for (Edge edge : this.carteVisuelle.getEdgeSet()) { //Nettoyage les marqueur temporelles
+                        edge.removeAttribute("estRapide");
                     }
-                    for (Edge route : carteVisuelle.getEdgeSet()) {
-                        route.removeAttribute("estRapide");
+                    for (Node node : carteVisuelle) {
+                        node.removeAttribute("estRapideNode");
                     }
-
-                    double dureeTotaleRapide = 0;
-                    for (Edge edge : cheminRapide.getEdgePath()) {
-                        dureeTotaleRapide += ((Number) edge.getAttribute("duree")).doubleValue();
-                    }
-                    double dureeTotaleSurEtRapide = 0;
-                    for (Edge edge : cheminSurEtRapide.getEdgePath()) {
-                        dureeTotaleSurEtRapide += ((Number) edge.getAttribute("dureeEstimee")).doubleValue();
-                    }
-
-                    lblResultatRapide.setText("Trajet Rapide : " + dureeTotaleRapide + " min");
-                    lblResultatSur.setText("Trajet Sûr : " + dureeTotaleSurEtRapide + " min");
+                    double dureeTotaleRapide = calculateur.CalculerDureeTotale(cheminRapide, "duree");
+                    this.lblResultatRapide.setText("Trajet Rapide : " + dureeTotaleRapide + " min");
+                    double dureeTotaleSurEtRapide = calculateur.CalculerDureeTotale(cheminRapide, "duree");
+                    this.lblResultatSur.setText("Trajet Sûr : " + dureeTotaleSurEtRapide + " min");
 
                     if (contientRouteInterdite) {
                         JOptionPane.showMessageDialog(this,
@@ -438,9 +417,7 @@ public class Fenetre extends JFrame {
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
             }
-
         });
-
     }
 
     /**
@@ -451,27 +428,27 @@ public class Fenetre extends JFrame {
      * @param graph Le graphe GraphStream à injecter dans l'interface Swing.
      */
     private void afficherDansPanel(Graph graph) {
-        panelGraphe.removeAll();
+        this.panelGraphe.removeAll();
 
         Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD); //Pour que linterface reste fluide
         viewer.enableAutoLayout();
 
         View vue = viewer.addDefaultView(false);
 
-        panelGraphe.add((Component) vue, BorderLayout.CENTER);
+        this.panelGraphe.add((Component) vue, BorderLayout.CENTER);
 
-        panelGraphe.revalidate();
-        panelGraphe.repaint();
+        this.panelGraphe.revalidate();
+        this.panelGraphe.repaint();
     }
 
     /**
      * Actualise le label des compteur des centres
      */
     private void ActualiserCompteur() {
-        if (graphe != null) {
-            lblNbMaternite.setText("Nombre de maternité : " + graphe.CompterCentreParType(Type_Centre.maternite));
-            lblNutrition.setText("Nombre de nutrition : " + graphe.CompterCentreParType(Type_Centre.nutrition));
-            lblNbOperatoire.setText("Nombre de bloc opératoire : " + graphe.CompterCentreParType(Type_Centre.operatoire));
+        if (this.graphe != null) {
+            this.lblNbMaternite.setText("Nombre de maternité : " + this.graphe.CompterCentreParType(Type_Centre.maternite));
+            this.lblNutrition.setText("Nombre de nutrition : " + this.graphe.CompterCentreParType(Type_Centre.nutrition));
+            this.lblNbOperatoire.setText("Nombre de bloc opératoire : " + this.graphe.CompterCentreParType(Type_Centre.operatoire));
         }
     }
 
@@ -487,8 +464,9 @@ public class Fenetre extends JFrame {
         public void focusGained(FocusEvent e) {
             JTextField champs = (JTextField) e.getSource();
 
-            if (champs.getText().equals(this.texteParDefaut));
-            champs.setText("");
+            if (champs.getText().equals(this.texteParDefaut)) {
+                champs.setText("");
+            }
         }
 
         @Override
@@ -497,7 +475,6 @@ public class Fenetre extends JFrame {
             if (champs.getText().trim().isEmpty()) {
                 champs.setText(this.texteParDefaut);
             }
-
         }
 
     }

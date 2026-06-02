@@ -2,12 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package sae_java;
+package sae_java_modèle;
 
 import java.util.ArrayList;
 
 /**
- * Représente un nœud (sommet) du graphe, correspondant à un centre de santé.
+ * Représente un centre de santé dans le District.
  * Un sommet possède un identifiant unique, un type de centre de santé, et une liste de routes sortantes.
  * * @author ilies
  */
@@ -18,7 +18,7 @@ public class CentreSante {
     private final ArrayList<Route> routes; 
 
     /**
-     * Constructeur de la classe Sommet.
+     * Crée un nouveau centre de santé
      *
      * @param centre Le type de centre de santé associé.
      * @param id     L'identifiant unique du sommet (ex: "S1").
