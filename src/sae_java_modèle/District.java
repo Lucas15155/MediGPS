@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package sae_java;
+package sae_java_modèle;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -10,10 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Gère la structure globale du réseau de santé. Cette classe permet de
- * modéliser le réseau sous forme de listes d'objets Java internes tout en
- * construisant et exposant un modèle GraphStream destiné à l'affichage visuel.
- *
+ * Gère la structure globale du réseau de santé. 
+ * Permet la génération aléatoire de districts, le chargement CSBe et le calcul de statistiques.
  * * @author ilies
  */
 public class District {
@@ -31,7 +29,6 @@ public class District {
     /**
      * Permet à la Vue de récupérer la liste des sommets du modèle afin de
      * l'afficher.
-     *
      * @return L'ArrayList contenant l'intégralité des sommets.
      */
     public ArrayList<CentreSante> getSommets() {

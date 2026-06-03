@@ -4,9 +4,9 @@ import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
-import sae_java.District;
-import sae_java.Route;
-import sae_java.CentreSante;
+import sae_java_modèle.District;
+import sae_java_modèle.Route;
+import sae_java_modèle.CentreSante;
 
 public class VisualiationDistrict {
 
