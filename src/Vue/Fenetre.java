@@ -10,6 +10,8 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -20,11 +22,13 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.Path;
+import org.graphstream.ui.graphicGraph.GraphicElement;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 import sae_java_modèle.CalculateurItineraire;
@@ -379,7 +383,7 @@ public class Fenetre extends JFrame {
                 Path cheminRapide = calculateur.calculerCheminPlusRapide(idDepartReel, idArriveeReel);
                 Path cheminSurEtRapide = calculateur.calculerCheminPlusSurEtRapide(idDepartReel, idArriveeReel);
 
-                if (cheminRapide.empty() ) {
+                if (cheminRapide.empty()) {
                     JOptionPane.showMessageDialog(this, "Aucun itinéraire possible entre ces deux centres.", "Information", JOptionPane.INFORMATION_MESSAGE);
 
                 } else {
@@ -434,9 +438,38 @@ public class Fenetre extends JFrame {
         viewer.enableAutoLayout();
 
         View vue = viewer.addDefaultView(false);
+        Component vueComponent = (Component) vue; //Obligatoire pour mettre un ecouteur sur le graph
 
-        this.panelGraphe.add((Component) vue, BorderLayout.CENTER);
+        vueComponent.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                     GraphicElement element = vue.findNodeOrSpriteAt(e.getX(), e.getY());
+                    if (element != null) {
+                         InfoCentreDialogue  FenetreInfo = new InfoCentreDialogue(Fenetre.this, carteVisuelle, element.getId());
+                    }
+                }
+            }
 
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+        });
+
+        this.panelGraphe.add((Component) vue, BorderLayout.CENTER); //Cast obligatoire pour afficher un view
         this.panelGraphe.revalidate();
         this.panelGraphe.repaint();
     }
