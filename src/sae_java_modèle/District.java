@@ -10,8 +10,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Gère la structure globale du réseau de santé. 
- * Permet la génération aléatoire de districts, le chargement CSBe et le calcul de statistiques.
+ * Gère la structure globale du réseau de santé. Permet la génération aléatoire
+ * de districts, le chargement CSBe et le calcul de statistiques.
+ *
  * * @author ilies
  */
 public class District {
@@ -29,6 +30,7 @@ public class District {
     /**
      * Permet à la Vue de récupérer la liste des sommets du modèle afin de
      * l'afficher.
+     *
      * @return L'ArrayList contenant l'intégralité des sommets.
      */
     public ArrayList<CentreSante> getSommets() {
@@ -79,8 +81,8 @@ public class District {
      * @return Un double répresentant la fiabilité
      */
     private static int tirerFiabilite() {  //generer une valeur entre 2 et 10
-        return ent_alea(2, 10);
-        
+        int fiabilite = ent_alea(2, 10);
+        return fiabilite ;
     }
 
     /**
@@ -103,9 +105,9 @@ public class District {
 
             for (int j = i + 1; j < nbSommets; j++) {
                 if (Math.random() < 1.0 / 5.0) { // 20% de chance de créer une route
-                    int fiabilite = tirerFiabilite();
-                    int distance = ent_alea(10, 50);
-                    int duree = ent_alea(10, 120);
+                    double fiabilite = tirerFiabilite();
+                    double distance = 10.0 + (Math.random() * (50.0 - 10.0));
+                    double duree = 10.0 + (Math.random() * (120.0 - 10.0));
 
                     String idDestination = "S" + (j + 1);
 
@@ -171,9 +173,9 @@ public class District {
 
             String[] detailsRoute = valeurRoute.split(",");     //separateur des valeurs ,
             if (detailsRoute.length == 3) {     //Sécurite si une erreur dans le fichier
-                int fiabilite = Integer.parseInt(detailsRoute[0].trim());
-                int distance = Integer.parseInt(detailsRoute[1].trim());
-                int duree = Integer.parseInt(detailsRoute[2].trim());
+                double fiabilite = Double.parseDouble(detailsRoute[0].trim());
+                double distance = Double.parseDouble(detailsRoute[1].trim());
+                double duree = Double.parseDouble(detailsRoute[2].trim());
 
                 String idDestination = "S" + (i - 1);
                 sommetSource.ajouterRoute(new Route(idDestination, fiabilite, distance, duree));  //Cree une route et l'ajouter à la liste routes

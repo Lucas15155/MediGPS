@@ -21,7 +21,7 @@ public class Route {
      * Constructeur de la classe Route.
      *
      * @param destination L'identifiant du sommet d'arrivée (ex: "S2").
-     * @param fiabilite   Le taux de fiabilité de la route (compris entre 0.2 et 1.0).
+     * @param fiabilite   Le taux de fiabilité de la route (compris entre 2.0 et 10.0).
      * @param distance    La distance en kilomètres.
      * @param duree       La durée du trajet en minutes.
      */
