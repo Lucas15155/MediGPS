@@ -12,20 +12,20 @@ package sae_java_modèle;
 public class Route {
 
     private final String destination;
-    private final int fiabilite;
-    private final int distance;
-    private final int duree;
+    private final double fiabilite;
+    private final double distance;
+    private final double duree;
 
     
     /**
      * Constructeur de la classe Route.
      *
      * @param destination L'identifiant du sommet d'arrivée (ex: "S2").
-     * @param fiabilite   Le taux de fiabilité de la route (compris entre 0.2 et 1.0).
+     * @param fiabilite   Le taux de fiabilité de la route (compris entre 2.0 et 10.0).
      * @param distance    La distance en kilomètres.
      * @param duree       La durée du trajet en minutes.
      */
-    public Route(String destination, int fiabilite, int distance, int duree) {
+    public Route(String destination, double fiabilite, double distance, double duree) {
         this.destination = destination;
         this.fiabilite = fiabilite;
         this.distance = distance;
@@ -46,7 +46,7 @@ public class Route {
      *
      * @return La fiabilité.
      */
-    public int getFiabilite() {
+    public double getFiabilite() {
         return this.fiabilite;
     }
 
@@ -56,7 +56,7 @@ public class Route {
      *
      * @return La distance en km.
      */
-    public int getDistance() {
+    public double getDistance() {
         return this.distance;
     }
     
@@ -65,7 +65,7 @@ public class Route {
      *
      * @return La durée en minutes.
      */
-    public int getDuree() {
+    public double getDuree() {
         return this.duree;
     }
     
