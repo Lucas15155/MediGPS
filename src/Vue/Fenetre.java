@@ -66,18 +66,15 @@ public class Fenetre extends JFrame {
      */
     public Fenetre() {
         super("MediGPS");
-
         System.setProperty("org.graphstream.ui", "swing");
-
-        setSize(1000, 700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
-
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setLocationRelativeTo(null);
+        this.setLayout(new BorderLayout(10, 10));
         this.initComposants();
         this.initEcouteurs();
+        this.setVisible(true);
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH); // fenetre en plein ecran
 
-        setVisible(true);
     }
 
     /**
@@ -454,7 +451,7 @@ public class Fenetre extends JFrame {
                     AffineTransform tx = gc.getDefaultTransform();
                     float abscisse = (float) (e.getX() * tx.getScaleX());
                     float ordonnee = (float) (e.getY() * tx.getScaleY());
-                    
+
                     GraphicElement node = vue.findNodeOrSpriteAt(abscisse, ordonnee);
 
                     if (node != null) {
