@@ -80,9 +80,9 @@ public class District {
      *
      * @return Un double répresentant la fiabilité
      */
-    private static int tirerFiabilite() {  //generer une valeur entre 2 et 10
-        int fiabilite = ent_alea(2, 10);
-        return fiabilite ;
+    private static double tirerFiabilite() {  //generer une valeur entre 2 et 10
+        double fiabilite = 0.2 ;
+        return fiabilite + Math.random() * 0.8;
     }
 
     /**
@@ -106,8 +106,8 @@ public class District {
             for (int j = i + 1; j < nbSommets; j++) {
                 if (Math.random() < 1.0 / 5.0) { // 20% de chance de créer une route
                     double fiabilite = tirerFiabilite();
-                    double distance = 10.0 + (Math.random() * (50.0 - 10.0));
-                    double duree = 10.0 + (Math.random() * (120.0 - 10.0));
+                    double distance = ent_alea(10, 50);
+                    double duree = ent_alea(10, 120);
 
                     String idDestination = "S" + (j + 1);
 

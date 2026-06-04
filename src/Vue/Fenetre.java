@@ -4,14 +4,16 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -46,6 +48,7 @@ import sae_java_modèle.Type_Centre;
 public class Fenetre extends JFrame {
 
     private Graph carteVisuelle;
+    private Viewer viewer;
 
     private District graphe;
     private JSpinner spinnerNbSommets;
@@ -314,11 +317,11 @@ public class Fenetre extends JFrame {
                 String texteSaisi = tfRouteRisque.getText();
                 try {
 
-                    int seuilRisque = Integer.parseInt(texteSaisi);
+                    double seuilRisque = Double.parseDouble(texteSaisi);
 
                     for (Edge routes : carteVisuelle.getEdgeSet()) {
 
-                        Integer fiabilite = (int) routes.getAttribute("fiabilite");
+                        Double fiabilite = (Double) routes.getAttribute("fiabilite");
 
                         if (fiabilite != null) {
                             if (fiabilite <= seuilRisque) {
@@ -331,7 +334,7 @@ public class Fenetre extends JFrame {
                         }
                     }
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(this, "Veuilez saisir une valeur valide (ex: 5)", "Erreur de saisie", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Veuilez saisir une valeur valide (ex: 0.5)", "Erreur de saisie", JOptionPane.WARNING_MESSAGE);
 
                     for (Edge route : this.carteVisuelle.getEdgeSet()) {
                         route.setAttribute("ui.hide");
@@ -407,12 +410,12 @@ public class Fenetre extends JFrame {
                     }
                     double dureeTotaleRapide = calculateur.CalculerDureeTotale(cheminRapide, "duree");
                     this.lblResultatRapide.setText("Trajet Rapide : " + dureeTotaleRapide + " min");
-                    double dureeTotaleSurEtRapide = calculateur.CalculerDureeTotale(cheminRapide, "duree");
+                    double dureeTotaleSurEtRapide = calculateur.CalculerDureeTotale(cheminSurEtRapide, "dureeEstimee");
                     this.lblResultatSur.setText("Trajet Sûr : " + dureeTotaleSurEtRapide + " min");
 
                     if (contientRouteInterdite) {
                         JOptionPane.showMessageDialog(this,
-                                "Impossible de trouver un chemin totalement sûr. Le seul itinéraire possible emprunte une route dont la fiabilité est dangereuse(< 2.5).",
+                                "Impossible de trouver un chemin totalement sûr. Le seul itinéraire possible emprunte une route dont la fiabilité est dangereuse( <0.25).",
                                 "Alerte Sécurité",
                                 JOptionPane.WARNING_MESSAGE);
                     }
@@ -434,42 +437,34 @@ public class Fenetre extends JFrame {
     private void afficherDansPanel(Graph graph) {
         this.panelGraphe.removeAll();
 
-        Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD); //Pour que linterface reste fluide
-        viewer.enableAutoLayout();
+        this.viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD) {
+        };
+        this.viewer.enableAutoLayout();
 
-        View vue = viewer.addDefaultView(false);
-        Component vueComponent = (Component) vue; //Obligatoire pour mettre un ecouteur sur le graph
+        View vue = this.viewer.addDefaultView(false);
+        Component vueComponent = (Component) vue;
+        vue.setMouseManager(null);
 
-        vueComponent.addMouseListener(new MouseListener() {
+        vueComponent.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                     GraphicElement element = vue.findNodeOrSpriteAt(e.getX(), e.getY());
-                    if (element != null) {
-                         InfoCentreDialogue  FenetreInfo = new InfoCentreDialogue(Fenetre.this, carteVisuelle, element.getId());
+
+                    GraphicsConfiguration gc = vueComponent.getGraphicsConfiguration();
+                    AffineTransform tx = gc.getDefaultTransform();
+                    float abscisse = (float) (e.getX() * tx.getScaleX());
+                    float ordonnee = (float) (e.getY() * tx.getScaleY());
+                    
+                    GraphicElement node = vue.findNodeOrSpriteAt(abscisse, ordonnee);
+
+                    if (node != null) {
+                        new InfoCentreDialogue(Fenetre.this, carteVisuelle, node.getId());
                     }
                 }
             }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-
         });
 
-        this.panelGraphe.add((Component) vue, BorderLayout.CENTER); //Cast obligatoire pour afficher un view
+        this.panelGraphe.add(vueComponent, BorderLayout.CENTER);
         this.panelGraphe.revalidate();
         this.panelGraphe.repaint();
     }
@@ -482,6 +477,7 @@ public class Fenetre extends JFrame {
             this.lblNbMaternite.setText("Nombre de maternité : " + this.graphe.CompterCentreParType(Type_Centre.maternite));
             this.lblNutrition.setText("Nombre de nutrition : " + this.graphe.CompterCentreParType(Type_Centre.nutrition));
             this.lblNbOperatoire.setText("Nombre de bloc opératoire : " + this.graphe.CompterCentreParType(Type_Centre.operatoire));
+
         }
     }
 
