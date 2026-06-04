@@ -75,8 +75,8 @@ public class CalculateurItineraire {
         for (Edge route : this.graphDistrict.getEdgeSet()) {
             double duree = ((Number) route.getAttribute("duree")).doubleValue();
             double fiabilite = ((Number) route.getAttribute("fiabilite")).doubleValue(); //On les met en number pour pouvoir les convertir en double 
-            if (fiabilite < 2.5) {
-                route.setAttribute("dureeEstimee", 999999.0); // bloque la route elle ne va jamais etre utilise
+            if (fiabilite < 0.25) {
+                route.setAttribute("dureeEstimee", Double.POSITIVE_INFINITY); // bloque la route elle ne va jamais etre utilise
             } else {
                 double dureeEstimee = duree * (20.0 - fiabilite) / 10.0;
                 route.setAttribute("dureeEstimee", dureeEstimee);
@@ -100,18 +100,18 @@ public class CalculateurItineraire {
         return dureeTotale;
     }
 
-    public HashMap<Node, Double> CalculerPoidsVersTousCentre(String idDepart, String attribut) {
+    public HashMap<Node, Double> CalculerCoutsVersTousCentre(String idDepart, String attribut) {
         Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, "resultat", attribut);
         dijkstra.init(this.graphDistrict);
         dijkstra.setSource(this.graphDistrict.getNode(idDepart));
         dijkstra.compute();
-        HashMap<Node, Double> mapPoids = new HashMap<>();
+        HashMap<Node, Double> mapCouts = new HashMap<>();
         for (Node centre : this.graphDistrict) {
             if (!centre.getId().equals(idDepart)) {
-                mapPoids.put(centre, dijkstra.getPathLength(centre));
+                mapCouts.put(centre, dijkstra.getPathLength(centre));
             }
         }
         dijkstra.clear();
-        return mapPoids;
+        return mapCouts;
     }
 }

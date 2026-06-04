@@ -1,6 +1,7 @@
 package sae_java_modèle;
 
 import Vue.Fenetre;
+import Vue.InfoCentreDialogue;
 
 /**
  * Point d'entrée principal (Main) du programme d'évaluation SAE Java. Instancie
