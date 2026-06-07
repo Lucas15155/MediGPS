@@ -21,6 +21,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -37,6 +38,7 @@ import sae_java_modèle.CalculateurItineraire;
 import sae_java_modèle.District;
 import sae_java_modèle.LettreCentreSanteException;
 import sae_java_modèle.Type_Centre;
+import scala.collection.immutable.List;
 
 /**
  * Fenêtre principale de l'application MediGPS (Interface Graphique Swing).
@@ -97,7 +99,7 @@ public class Fenetre extends JFrame {
         btnGenerer = new JButton("Générer");
         btnCharger = new JButton("Charger CSV");
 
-        tfRouteRisque = new JTextField("Saisissez une valeur", 13);
+        tfRouteRisque = new JTextField("Saisissez la fiabilité", 13);
 
         btnFiltrer = new JButton("Filtrer");
 
@@ -161,30 +163,38 @@ public class Fenetre extends JFrame {
         panelStats.add(lblNbOperatoire, gcStats);
 
         gcStats.gridy = 3;
+        gcStats.fill = GridBagConstraints.HORIZONTAL;
+        gcStats.weightx = 1.0;
+        panelStats.add(creerSeparateur(), gcStats);
+        gcStats.fill = GridBagConstraints.NONE;
+        gcStats.weightx = 0;
+        
+        gcStats.gridy = 4;
         panelStats.add(checkMaternite, gcStats);
 
-        gcStats.gridy = 4;
+        gcStats.gridy = 5;
         panelStats.add(checkNutrition, gcStats);
 
-        gcStats.gridy = 5;
+        gcStats.gridy = 6;
         panelStats.add(checkOperatoire, gcStats);
         add(panelStats, BorderLayout.WEST);
+        gcStats.gridy = 7;
 
         btnReintialiser = new JButton("Réintialiser");
-        gc.gridx = 6;
+        gc.gridx = 8;
         panelControles.add(btnReintialiser, gc);
 
         checkDistance = new JCheckBox("Distance (km)", true);
         checkDuree = new JCheckBox("Durée (min)", false);
         checkFiabilite = new JCheckBox("Fiabilité", false);
 
-        gcStats.gridy = 6;
+        gcStats.gridy = 8;
         panelStats.add(checkDistance, gcStats);
 
-        gcStats.gridy = 7;
+        gcStats.gridy = 9;
         panelStats.add(checkDuree, gcStats);
 
-        gcStats.gridy = 8;
+        gcStats.gridy = 10;
         panelStats.add(checkFiabilite, gcStats);
 
         tfCentreDepart = new JTextField("Centre de départ", 15);
@@ -192,13 +202,13 @@ public class Fenetre extends JFrame {
         btnCalculer = new JButton("Calculer le chemin");
         btnCalculer.setBackground(Color.ORANGE);
 
-        gcStats.gridy = 9;
+        gcStats.gridy = 11;
         panelStats.add(tfCentreDepart, gcStats);
 
-        gcStats.gridy = 10;
+        gcStats.gridy = 12;
         panelStats.add(tfCentreArrivee, gcStats);
 
-        gcStats.gridy = 11;
+        gcStats.gridy = 13;
         panelStats.add(btnCalculer, gcStats);
 
         lblResultatRapide = new JLabel("Trajet rapide : (min)");
@@ -206,10 +216,10 @@ public class Fenetre extends JFrame {
         lblResultatSur = new JLabel("Trajet sur : (min)");
         lblResultatSur.setForeground(Color.MAGENTA);
 
-        gcStats.gridy = 12;
+        gcStats.gridy = 14;
         panelStats.add(lblResultatRapide, gcStats);
 
-        gcStats.gridy = 13;
+        gcStats.gridy = 15;
         panelStats.add(lblResultatSur, gcStats);
 
         this.pack();
@@ -318,9 +328,10 @@ public class Fenetre extends JFrame {
 
                     for (Edge routes : carteVisuelle.getEdgeSet()) {
 
-                        Double fiabilite = (Double) routes.getAttribute("fiabilite");
+                        Object attributFiabilite = (Double) routes.getAttribute("fiabilite");
 
-                        if (fiabilite != null) {
+                        if (attributFiabilite != null) {
+                            double fiabilite = ((Number) attributFiabilite).doubleValue();
                             if (fiabilite <= seuilRisque) {
                                 routes.removeAttribute("ui.hide");
                                 routes.setAttribute("ui.style", "fill-color: red; size: 2px;");
@@ -502,6 +513,13 @@ public class Fenetre extends JFrame {
                 champs.setText(this.texteParDefaut);
             }
         }
+    }
 
+    private JPanel creerSeparateur() {
+        JPanel panneauSep = new JPanel();
+        panneauSep.setBackground(Color.GRAY);
+        panneauSep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
+        panneauSep.setPreferredSize(new Dimension(0 , 2));
+        return panneauSep;
     }
 }

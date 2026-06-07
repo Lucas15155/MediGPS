@@ -180,9 +180,9 @@ public class District {
                 String idDestination = "S" + (i - 1);
                 sommetSource.ajouterRoute(new Route(idDestination, fiabilite, distance, duree));  //Cree une route et l'ajouter à la liste routes
 
-                System.out.println("Lien trouve");
+                //System.out.println("Lien trouve");
             } else {
-                System.out.println("Format inattendue");
+                //System.out.println("Format inattendue");
                 ligneEstValide = false;
                 break;
             }

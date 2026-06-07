@@ -4,6 +4,8 @@ import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.spriteManager.Sprite;
+import org.graphstream.ui.spriteManager.SpriteManager;
 import sae_java_modèle.District;
 import sae_java_modèle.Route;
 import sae_java_modèle.CentreSante;
@@ -14,11 +16,11 @@ public class VisualiationDistrict {
         Graph graphAffichage = new SingleGraph("MediGPS");
 
            graphAffichage.setAttribute("ui.stylesheet",
-                "node { size: 15px; fill-color: #4A90D9; text-mode: normal; text-size: 13px; } "
+                "node { size: 20px; fill-color: #4A90D9; text-mode: normal; text-size: 13px; } "
                 + "node.maternite  { fill-color: blue; } "
                 + "node.operatoire { fill-color: red; } "
-                + "node.nutrition  { size: 15px; fill-color: green; icon-mode: at-left; icon: url('Images/Nutrition.png'); } "
-                + "edge { fill-color: #888888; text-size: 13px; text-mode: normal; }"
+                + "node.nutrition  { size: 15px; fill-color: green; } "
+                + "edge { fill-color: #A9A9A9; size: 3px; text-offset: 10px, 10px; text-style: bold; text-size: 13px; text-mode: normal; }"
         );
  
 
@@ -28,7 +30,7 @@ public class VisualiationDistrict {
             String typeCentre = s.getCentre().name();
             node.setAttribute("ui.class", typeCentre);
         }
-
+        SpriteManager spriteManager = new SpriteManager(graphAffichage);
         for (CentreSante sommet : modele.getSommets()) {
             for (Route route : sommet.getRoutes()) {
                 String edgeId = sommet.getId() + "-" + route.getDestination();
@@ -39,8 +41,6 @@ public class VisualiationDistrict {
                     edge.setAttribute("distance", route.getDistance());
                     edge.setAttribute("duree", route.getDuree());
                     edge.setAttribute("fiabilite", route.getFiabilite());
-                    
-                    edge.setAttribute("ui.label", route.getDistance() + " km");
                 }
             }
         }

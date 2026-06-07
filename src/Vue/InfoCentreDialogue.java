@@ -10,7 +10,6 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,7 +32,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import java.awt.Dimension;
 
-
 /**
  *
  * @author ilies
@@ -47,7 +45,7 @@ public class InfoCentreDialogue extends JDialog {
     private HashMap<Node, Double> coutsDuree;
     private HashMap<Node, Double> coutsDureeEstimee;
 
-    private Node MaterniteProche;
+    private Node materniteProche;
     private Node NutritionProche;
     private Node OperatoireProche;
 
@@ -63,7 +61,7 @@ public class InfoCentreDialogue extends JDialog {
         Node CentreCible = graph.getNode(idCentre);
         this.typeCentre = (String) CentreCible.getAttribute("ui.class");
         this.chargerDonnes(graph, idCentre);
-        this.MaterniteProche = trouverPlusProcheParType("maternite", coutsDuree);
+        this.materniteProche = trouverPlusProcheParType("maternite", coutsDuree);
         this.NutritionProche = trouverPlusProcheParType("nutrition", coutsDuree);
         this.OperatoireProche = trouverPlusProcheParType("operatoire", coutsDuree);
 
@@ -97,6 +95,44 @@ public class InfoCentreDialogue extends JDialog {
         gc.gridy = 2;
         panneauGlobal.add(panneau, BorderLayout.NORTH);
 
+        gc.gridy = 3;
+
+        if (materniteProche != null) {
+            double duree = this.coutsDuree.get(materniteProche);
+            double dureeEstimee = this.coutsDureeEstimee.get(materniteProche);
+
+            lblMaterniteProche = new JLabel("Maternité la plus proche : " + this.materniteProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " min");
+        } else {
+            lblMaterniteProche = new JLabel("Aucune maternité proche au centre ");
+        }
+        panneau.add(lblMaterniteProche, gc);
+        
+        gc.gridx = 1;
+        gc.gridy = 3;
+        
+        if (NutritionProche != null) {
+            double duree = this.coutsDuree.get(NutritionProche);
+            double dureeEstimee = this.coutsDureeEstimee.get(NutritionProche);
+
+            lblNutritionProche = new JLabel("Nutrition la plus proche : " + this.NutritionProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " min");
+        } else {
+            lblNutritionProche = new JLabel("Aucune nutrition proche au centre ");
+        }
+        panneau.add(lblNutritionProche, gc);
+        
+        gc.gridx = 2;
+        gc.gridy = 3;
+        
+        if (OperatoireProche != null) {
+            double duree = this.coutsDuree.get(OperatoireProche);
+            double dureeEstimee = this.coutsDureeEstimee.get(OperatoireProche);
+
+            lblOperatoireProche = new JLabel("Bloc opératoire le plus proche : " + this.OperatoireProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " min");
+        } else {
+            lblOperatoireProche = new JLabel("Aucun bloc opératoire proche au centre ");
+        }
+        panneau.add(lblOperatoireProche, gc);
+        
         JPanel panneauTables = new JPanel(new GridBagLayout());
         GridBagConstraints gcTable = new GridBagConstraints();
         gcTable.insets = new Insets(5, 0, 5, 0);
