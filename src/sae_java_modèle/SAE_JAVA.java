@@ -21,7 +21,7 @@ public class SAE_JAVA {
      */
     public static void main(String[] args) throws LettreCentreSanteException {
         Fenetre fen = new Fenetre();
-               
+        //CalculateurItineraire.glouton(3);       
 
     }
 }

@@ -19,6 +19,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -34,10 +35,7 @@ import org.graphstream.graph.Path;
 import org.graphstream.ui.graphicGraph.GraphicElement;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
-import sae_java_modèle.CalculateurItineraire;
-import sae_java_modèle.District;
-import sae_java_modèle.LettreCentreSanteException;
-import sae_java_modèle.Type_Centre;
+import sae_java_modèle.*;
 import scala.collection.immutable.List;
 
 /**
@@ -55,10 +53,10 @@ public class Fenetre extends JFrame {
     private District graphe;
     private JSpinner spinnerNbSommets;
     private JPanel panelGraphe;
-    private JButton btnGenerer, btnCharger, btnFiltrer, btnCalculer, btnReintialiser;
+    private JButton btnGenerer, btnCharger, btnFiltrer, btnCalculer, btnReintialiser,btnGlouton;
     private JTextField tfRouteRisque, tfCentreDepart, tfCentreArrivee;
-
-    private JLabel lblNbMaternite, lblNbOperatoire, lblNutrition, lblResultatRapide, lblResultatSur;
+    private JList<String> listeSommet;
+    private JLabel lblNbMaternite, lblNbOperatoire, lblNutrition, lblResultatRapide, lblResultatSur,lblnbEtape,lblCheminComplet,lblDureeTotal;
     private JCheckBox checkMaternite, checkOperatoire, checkNutrition;
     private JCheckBox checkDistance, checkDuree, checkFiabilite;
 
@@ -98,7 +96,7 @@ public class Fenetre extends JFrame {
 
         btnGenerer = new JButton("Générer");
         btnCharger = new JButton("Charger CSV");
-
+        
         tfRouteRisque = new JTextField("Saisissez la fiabilité", 13);
 
         btnFiltrer = new JButton("Filtrer");
@@ -201,7 +199,7 @@ public class Fenetre extends JFrame {
         tfCentreArrivee = new JTextField("Centre d'arrivée", 15);
         btnCalculer = new JButton("Calculer le chemin");
         btnCalculer.setBackground(Color.ORANGE);
-
+        
         gcStats.gridy = 11;
         panelStats.add(tfCentreDepart, gcStats);
 
@@ -215,13 +213,25 @@ public class Fenetre extends JFrame {
         lblResultatRapide.setForeground(new Color(0, 139, 139));
         lblResultatSur = new JLabel("Trajet sur : (min)");
         lblResultatSur.setForeground(Color.MAGENTA);
-
+        btnGlouton = new JButton("Livrer tous les centres");
+        lblnbEtape = new JLabel();
+        lblDureeTotal = new JLabel();
+        lblCheminComplet = new JLabel();
         gcStats.gridy = 14;
         panelStats.add(lblResultatRapide, gcStats);
 
         gcStats.gridy = 15;
         panelStats.add(lblResultatSur, gcStats);
-
+        gcStats.gridy = 16;
+        panelStats.add(btnGlouton, gcStats);
+        gcStats.gridy = 17;
+        panelStats.add(lblnbEtape, gcStats);
+        gcStats.gridy = 18;
+        panelStats.add(lblDureeTotal, gcStats);
+        gcStats.gridy = 19;
+        panelStats.add(lblCheminComplet, gcStats);
+        
+        
         this.pack();
     }
 
@@ -432,6 +442,25 @@ public class Fenetre extends JFrame {
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
             }
+        });
+        btnGlouton.addActionListener((e) -> {
+            this.carteVisuelle = Algo.glouton(this.graphe);
+            lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
+                + Algo.getLivres().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) :");
+            lblDureeTotal.setText("Duree total: " + Algo.getDureeTotal() + " min");
+            
+            //lblCheminComplet.setText(String.join(" -> ", Algo.getTraverse()));
+//            listeSommet = new JList<>(); 
+//            String t[] ;
+//            int i=0;
+//            for (String centre : Algo.getTraverse()) {
+//                t[i]= centre;
+//                i++;
+//            }
+//
+//            listeSommet.add();
+            
+            afficherDansPanel(this.carteVisuelle);
         });
     }
 
