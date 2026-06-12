@@ -14,6 +14,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -70,11 +71,12 @@ public class Fenetre extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout(10, 10));
+        
         this.initComposants();
         this.initEcouteurs();
         this.setVisible(true);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH); // fenetre en plein ecran
-
+        
     }
 
     /**
@@ -353,11 +355,11 @@ public class Fenetre extends JFrame {
                     }
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Veuilez saisir une valeur valide (ex: 0.5)", "Erreur de saisie", JOptionPane.WARNING_MESSAGE);
-
-                    for (Edge route : this.carteVisuelle.getEdgeSet()) {
-                        route.setAttribute("ui.hide");
-
-                    }
+                    tfRouteRisque.setText("");
+//                    for (Edge route : this.carteVisuelle.getEdgeSet()) {
+//                        route.setAttribute("ui.hide");
+//
+//                    }
                 }
             }
         });
@@ -444,23 +446,77 @@ public class Fenetre extends JFrame {
             }
         });
         btnGlouton.addActionListener((e) -> {
-            this.carteVisuelle = Algo.glouton(this.graphe);
+            if (this.graphe == null) {
+                JOptionPane.showMessageDialog(this,
+                    "Veuillez d'abord charger ou générer un district.",
+                    "Aucun district", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            // Réinitialiser les styles avant de lancer l'algo
+            // pour ne pas empiler les colorations
+            StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
+            // Mettre à jour les labels dans la barre latérale
+            Algo.glouton(this.graphe, this.carteVisuelle);
             lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
-                + Algo.getLivres().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) :");
+                    + Algo.getLivres().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) :");
             lblDureeTotal.setText("Duree total: " + Algo.getDureeTotal() + " min");
             
-            //lblCheminComplet.setText(String.join(" -> ", Algo.getTraverse()));
-//            listeSommet = new JList<>(); 
-//            String t[] ;
-//            int i=0;
-//            for (String centre : Algo.getTraverse()) {
-//                t[i]= centre;
-//                i++;
-//            }
-//
-//            listeSommet.add();
-            
-            afficherDansPanel(this.carteVisuelle);
+        // --- Construction du message détaillé pour la fenêtre popup ---
+        StringBuilder message = new StringBuilder();
+
+        message.append("RÉSULTAT DE LA TOURNÉE GLOUTON    \n\n");
+
+        // Résumé chiffré
+        message.append("Centres livrés : ")
+               .append(Algo.getLivres().size())
+               .append(" / ")
+               .append(Algo.getTousLesCentres().size())
+               .append("\n");
+        message.append("Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+        message.append("Nombre d'étapes (avec transit) : ").append(Algo.getTraverse().size()).append("\n");
+        message.append("\n──────────────────────────────────────\n");
+        message.append("CHEMIN COMPLET :\n\n");
+
+        // Chemin avec numérotation et indication livraison/transit
+        ArrayList<String> traverse = Algo.getTraverse();
+        ArrayList<String> livres   = Algo.getLivres();
+
+        for (int i = 0; i < traverse.size(); i++) {
+            String centre = traverse.get(i);
+            boolean estLivre = livres.contains(centre);
+
+            if (i == 0) {
+                message.append("  [Départ]  ").append(centre).append("\n");
+            } else {
+                String fleche = "  ──►  ";
+                if (estLivre) {
+                    message.append(fleche).append(centre).append("  ✔ LIVRAISON\n");
+                } else {
+                    message.append(fleche).append(centre).append("  (transit)\n");
+                }
+            }
+        }
+
+        message.append("\n──────────────────────────────────────\n");
+        message.append("Ordre des livraisons : ");
+        message.append(String.join(" → ", livres));
+
+        // Affichage dans un JDialog scrollable (au lieu de JOptionPane basique)
+        javax.swing.JTextArea textArea = new javax.swing.JTextArea(message.toString()+"\n");
+        textArea.setEditable(false);
+        textArea.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
+        textArea.setBackground(new Color(245, 245, 245));
+
+        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 450));
+
+        JOptionPane.showMessageDialog(
+            this,
+            scrollPane,
+            "Tournée glouton — " + Algo.getLivres().size() + " centres livrés",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+                //afficherDansPanel(this.carteVisuelle);
         });
     }
 

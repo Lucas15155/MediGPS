@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package sae_java_modèle;
 
 import java.util.ArrayList;
@@ -10,10 +7,7 @@ import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 
-/**
- *
- * @author p2504557
- */
+
 public class Algo {
     private static ArrayList<String> traverse;
     private static ArrayList<String> livres;
@@ -48,8 +42,7 @@ public class Algo {
      * @param district
      * @return
      */
-    public static Graph glouton(District district) {
-        Graph g = district.convertirGraph();
+    public static Graph glouton(District district,Graph g) {
         tousLesCentres = district.getSommets();
 
         if (tousLesCentres.isEmpty()) {
@@ -66,7 +59,7 @@ public class Algo {
         String positionActuelle = tousLesCentres.get(0).getId(); // départ depuis S1
         traverse.add(positionActuelle);
         livres.add(positionActuelle);
-
+        dureeTotal=0;
         System.out.println("=== Algorithme Glouton ===");
         System.out.println("Depart : " + positionActuelle);
         // --- 3. Boucle principale : tant qu'il reste des centres non livrés ---
