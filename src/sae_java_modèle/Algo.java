@@ -11,6 +11,7 @@ import org.graphstream.graph.Node;
 public class Algo {
     private static ArrayList<String> traverse;
     private static ArrayList<String> livres;
+    private static ArrayList<String> etiquettes;
     private static ArrayList<CentreSante> tousLesCentres;
     private static int dureeTotal = 0;
 
@@ -21,7 +22,11 @@ public class Algo {
     public static ArrayList<String> getLivres() {
         return livres;
     }
-
+    
+    public static ArrayList<String> getEtiquettes() {
+        return etiquettes;
+    }
+    
     public static ArrayList<CentreSante> getTousLesCentres() {
         return tousLesCentres;
     }
@@ -55,13 +60,15 @@ public class Algo {
         traverse = new ArrayList<>();
         // livres = centres ayant été livrés (sans répétition)
         livres = new ArrayList<>();
-
+        etiquettes = new ArrayList<>();
+        
         String positionActuelle = tousLesCentres.get(0).getId(); // départ depuis S1
         traverse.add(positionActuelle);
         livres.add(positionActuelle);
+        etiquettes.add("Depart : " + positionActuelle); 
         dureeTotal=0;
-        System.out.println("=== Algorithme Glouton ===");
-        System.out.println("Depart : " + positionActuelle);
+//        System.out.println("=== Algorithme Glouton ===");
+//        System.out.println("Depart : " + positionActuelle);
         // --- 3. Boucle principale : tant qu'il reste des centres non livrés ---
         while (livres.size() < tousLesCentres.size()) {
 
@@ -110,8 +117,11 @@ public class Algo {
                 String etape = cheminVersProchain.get(i);
                 traverse.add(etape);
 
-                System.out.println("  -> " + etape
-                        + (i < cheminVersProchain.size() - 1 ? " (transit)" : " (livraison, duree depuis " + positionActuelle + " : " + (int) meilleureduree + " min)"));
+                String ligne = "  -> " + etape
+                + (i < cheminVersProchain.size() - 1
+                ? " (transit)"
+                : " (livraison, duree depuis " + positionActuelle + " : " + (int) meilleureduree + " min)");
+                etiquettes.add(ligne);
             }
             dureeTotal += meilleureduree;
             // Marquer le centre comme livré et avancer

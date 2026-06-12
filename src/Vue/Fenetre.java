@@ -455,66 +455,44 @@ public class Fenetre extends JFrame {
             // Réinitialiser les styles avant de lancer l'algo
             // pour ne pas empiler les colorations
             StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
-            // Mettre à jour les labels dans la barre latérale
+            
             Algo.glouton(this.graphe, this.carteVisuelle);
+            // Mettre à jour les labels dans la barre latérale
             lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
                     + Algo.getLivres().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) :");
             lblDureeTotal.setText("Duree total: " + Algo.getDureeTotal() + " min");
             
-        // --- Construction du message détaillé pour la fenêtre popup ---
-        StringBuilder message = new StringBuilder();
-
-        message.append("RÉSULTAT DE LA TOURNÉE GLOUTON    \n\n");
-
-        // Résumé chiffré
-        message.append("Centres livrés : ")
-               .append(Algo.getLivres().size())
-               .append(" / ")
-               .append(Algo.getTousLesCentres().size())
-               .append("\n");
-        message.append("Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
-        message.append("Nombre d'étapes (avec transit) : ").append(Algo.getTraverse().size()).append("\n");
-        message.append("\n──────────────────────────────────────\n");
-        message.append("CHEMIN COMPLET :\n\n");
 
         // Chemin avec numérotation et indication livraison/transit
-        ArrayList<String> traverse = Algo.getTraverse();
+//        ArrayList<String> traverse = Algo.getTraverse();
         ArrayList<String> livres   = Algo.getLivres();
+        ArrayList<String> etiquettes = Algo.getEtiquettes();
+        
+        String[] etapes = etiquettes.toArray(new String[0]);
+        
 
-        for (int i = 0; i < traverse.size(); i++) {
-            String centre = traverse.get(i);
-            boolean estLivre = livres.contains(centre);
+        // JList avec les étapes
+    listeSommet = new JList<>(etapes);
+    listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
 
-            if (i == 0) {
-                message.append("  [Départ]  ").append(centre).append("\n");
-            } else {
-                String fleche = "  ──►  ";
-                if (estLivre) {
-                    message.append(fleche).append(centre).append("  ✔ LIVRAISON\n");
-                } else {
-                    message.append(fleche).append(centre).append("  (transit)\n");
-                }
-            }
-        }
+    javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
+    scrollPane.setPreferredSize(new Dimension(400, 400));
 
-        message.append("\n──────────────────────────────────────\n");
-        message.append("Ordre des livraisons : ");
-        message.append(String.join(" → ", livres));
+    // Résumé au-dessus de la liste
+    StringBuilder resume = new StringBuilder();
+    resume.append("Centres livrés : ").append(livres.size())
+          .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
+    resume.append("Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
 
-        // Affichage dans un JDialog scrollable (au lieu de JOptionPane basique)
-        javax.swing.JTextArea textArea = new javax.swing.JTextArea(message.toString()+"\n");
-        textArea.setEditable(false);
-        textArea.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
-        textArea.setBackground(new Color(245, 245, 245));
+    JPanel panneauPopup = new JPanel(new BorderLayout(0, 10));
+    panneauPopup.add(new JLabel(resume.toString()), BorderLayout.NORTH);
+    panneauPopup.add(scrollPane, BorderLayout.CENTER);
 
-        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(500, 450));
-
-        JOptionPane.showMessageDialog(
-            this,
-            scrollPane,
-            "Tournée glouton — " + Algo.getLivres().size() + " centres livrés",
-            JOptionPane.INFORMATION_MESSAGE
+    JOptionPane.showMessageDialog(
+        this,
+        panneauPopup,
+        "Tournée glouton — " + livres.size() + " centres livrés",
+        JOptionPane.INFORMATION_MESSAGE
         );
                 //afficherDansPanel(this.carteVisuelle);
         });
