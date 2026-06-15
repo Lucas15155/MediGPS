@@ -124,45 +124,6 @@ public class District {
     }
     
     /**
-     * Convertit un district en un graph de la classe graphstream
-     *
-     *
-     *@return Le graph convertit
-     *  
-     */
-    public Graph convertirGraph() {
-        System.setProperty("org.graphstream.ui", "swing"); //definie swing comme moteur d'affichage
-
-        Graph graph = new SingleGraph("Graphe Santé");
-
-        graph.setAttribute("ui.stylesheet",
-                "node { size: 15px; fill-color: #777; text-mode: normal; } "
-                + "edge { text-size: 12px; fill-color: #0000FF; text-mode: hidden; }");
-
-        for (CentreSante s : this.lstCentre) {
-            Node node = graph.addNode(s.getId());  //Creer tout les sommets 
-            node.setAttribute("ui.label", s.getId() + s.getLettre());  //donne l'attribut de l'id et la lettre du sommet
-        }
-
-        for (CentreSante s : this.lstCentre) {   //Utilisation de for imbriqué pour parcourir les sommets et les routes
-            for (Route r : s.getRoutes()) {
-                String edgeId = s.getId() + "-" + r.getDestination(); //variable pour la route I à J
-                String edgeIdInverse = r.getDestination() + "-" + s.getId();  //variable pour la route J à I
-                if (graph.getEdge(edgeId) == null && graph.getEdge(edgeIdInverse) == null) {  //verifie que la route n'existe pas pour éviter les doublons 
-                    Edge edge = graph.addEdge(edgeId, s.getId(), r.getDestination());  //Creer la route
-                    
-                    // Ajoute les attributs de poids sur l'arête
-                    edge.setAttribute("duree", r.getDuree());
-                    edge.setAttribute("distance", r.getDistance());
-                    edge.setAttribute("fiabilite", r.getFiabilite());
-                    edge.setAttribute("ui.label", +r.getFiabilite() + ", " + r.getDistance() + " km, " + r.getDuree() + " min"); // Surcharge le constructeur des arrêtes 
-                }
-            }
-        }
-        return graph; 
-    }
-    
-    /**
      * Convertit la lettre lue dans un fichier CSV en son équivalent énuméré
      * Centre_Sante
      *
@@ -198,7 +159,7 @@ public class District {
      * @throws LettreCentreSanteException Si la lettre du centre est invalide.
      */
     private static void parserLigneCsv(String ligne, District nouveauGraphe) throws LettreCentreSanteException {
-        String[] colonnes = ligne.split(";");   //separateur du fichier ; 
+        String[] colonnes = ligne.split(";",-1);   //separateur du fichier ; 
         String idSource = colonnes[0];      //premiere colonne du fichier c'est l'idSommet
         String typeLettre = colonnes[1];    //deuxième colonne cest le type de centre
 
@@ -210,7 +171,7 @@ public class District {
         for (int i = 2; i < colonnes.length; i++) {     //pour chaque colonnes voir si il y une destinations si oui decouper en 3 colonnes
             String valeurRoute = colonnes[i];
 
-            if (valeurRoute.equals("0")) {
+            if (valeurRoute.isEmpty() ||valeurRoute.equals("0")) {
                 continue;  //saute l'etape 
             }
 
