@@ -4,7 +4,6 @@ import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.ui.spriteManager.Sprite;
 import org.graphstream.ui.spriteManager.SpriteManager;
 import sae_java_modèle.District;
 import sae_java_modèle.Route;
@@ -19,7 +18,7 @@ public class VisualiationDistrict {
                 "node { size: 20px; fill-color: #4A90D9; text-mode: normal; text-size: 13px; } "
                 + "node.maternite  { fill-color: blue; } "
                 + "node.operatoire { fill-color: red; } "
-                + "node.nutrition  { size: 15px; fill-color: green; } "
+                + "node.nutrition  { fill-color: green; } "
                 + "edge { fill-color: #A9A9A9; size: 3px; text-offset: 10px, 10px; text-style: bold; text-size: 13px; text-mode: normal; }"
         );
  

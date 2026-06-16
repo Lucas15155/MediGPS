@@ -486,10 +486,34 @@ public class Fenetre extends JFrame {
                     centres,
                     centres[0]
                 );
+                // L'utilisateur a fermé la fenêtre sans choisir
+                if (choix == JOptionPane.CLOSED_OPTION)
+                    return;
+                //this.graphe.CompterCentreParType(Type_Centre.maternite)
                 Algo.glouton(this.graphe, this.carteVisuelle,option);
                 // Met à jour les labels dans la barre latérale
-                lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
+                int livre=0;
+                StringBuilder resume = new StringBuilder();
+                if(option==1){
+                    livre=Algo.getLivres().size()-this.graphe.CompterCentreParType(Type_Centre.operatoire)-this.graphe.CompterCentreParType(Type_Centre.nutrition);
+                    resume.append("\nChemin complet (" +Algo.getTraverse().size() + " etapes, "+ livre + "/" + this.graphe.CompterCentreParType(Type_Centre.maternite) + " centres livres) ");
+                    lblnbEtape.setText(""+resume);
+                }
+                else if(option==2){
+                    livre=Algo.getLivres().size()-this.graphe.CompterCentreParType(Type_Centre.maternite)-this.graphe.CompterCentreParType(Type_Centre.nutrition);
+                    resume.append("\nChemin complet (" +Algo.getTraverse().size() + " etapes, "+ livre + "/" + this.graphe.CompterCentreParType(Type_Centre.operatoire) + " centres livres) ");
+                    lblnbEtape.setText(""+resume);
+                }
+                else if(option==3){
+                    livre=Algo.getLivres().size()-this.graphe.CompterCentreParType(Type_Centre.maternite)-this.graphe.CompterCentreParType(Type_Centre.operatoire);
+                    resume.append("\nChemin complet (" +Algo.getTraverse().size() + " etapes, "+ livre + "/" + this.graphe.CompterCentreParType(Type_Centre.nutrition) + " centres livres) ");
+                    lblnbEtape.setText(""+resume);
+                }else{
+                    lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
                         + Algo.getLivres().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
+                }
+                
+                
                 lblDureeTotal.setText("Duree total: " + Algo.getDureeTotal() + " min");
 
 
@@ -508,10 +532,17 @@ public class Fenetre extends JFrame {
                 scrollPane.setPreferredSize(new Dimension(400, 400));
 
                 // Résumé au-dessus de la liste
-                StringBuilder resume = new StringBuilder();
-                resume.append("Centres livrés : ").append(livres.size())
-                      .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
-                resume.append("    Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+                
+//                if(option!=0){
+//                    resume.append("Centres livrés : ").append(livre)
+//                      .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
+//                      resume.append("    Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+//                }else{
+//                    resume.append("Centres livrés : ").append(livres.size())
+//                      .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
+//                      resume.append("    Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+//                }
+                
 
                 panneauPopup = new JPanel(new BorderLayout(0, 10));
                 panneauPopup.add(new JLabel(resume.toString()), BorderLayout.NORTH);
@@ -520,7 +551,7 @@ public class Fenetre extends JFrame {
                 JOptionPane.showMessageDialog(
                     this,
                     panneauPopup,
-                    "Tournée glouton  " + livres.size() + " centres livrés",
+                    "Tournée glouton  " + livre + " centres livrés",
                     JOptionPane.INFORMATION_MESSAGE
                     );
                 }

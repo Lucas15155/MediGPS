@@ -59,48 +59,48 @@ public class Algo {
      */
     public static Graph glouton(District district,Graph g,int option) {
         tousLesCentres  = district.getSommets();
-        ArrayList aLivre = new ArrayList<>();
-        if(option==0){
-            aLivre= district.getSommets();
-        }
-        if(option==1){
-            for(CentreSante c : district.getSommets()){
-                if(c.getCentre()==Type_Centre.maternite)
-                    aLivre.add(c) ;
-            }
-            }else if(option==2){
-            for(CentreSante c : district.getSommets()){
-                if(c.getCentre()==Type_Centre.operatoire)
-                    aLivre.add(c) ;
-            }
-            }else if(option==3){
-                for(CentreSante c : district.getSommets()){
-                    if(c.getCentre()==Type_Centre.nutrition)
-                        aLivre.add(c) ;
-                }
-            }
+//        ArrayList aLivre = new ArrayList<>();
 
-        
-        if (tousLesCentres.isEmpty()) {
+        if (tousLesCentres.isEmpty()) { 
             System.out.println("Le district est vide.");
             return g;
         }
-
-        // --- 2. Initialisation ---
+        
+        //  Initialisation 
         // traverse = chemin complet parcouru (avec répétitions si on repasse)
         traverse = new ArrayList<>();
         // livres = centres ayant été livrés (sans répétition)
         livres = new ArrayList<>();
         etiquettes = new ArrayList<>();
         
+        if(option==1){
+            for(CentreSante c : district.getSommets()){
+                if(c.getCentre()!=Type_Centre.maternite)
+                    livres.add(c.getId()) ;
+            }
+            }else if(option==2){
+            for(CentreSante c : district.getSommets()){
+                if(c.getCentre()!=Type_Centre.operatoire)
+                    livres.add(c.getId()) ;
+            }
+            }else if(option==3){
+                for(CentreSante c : district.getSommets()){
+                    if(c.getCentre()!=Type_Centre.nutrition)
+                        livres.add(c.getId()) ;
+                }
+            }
+
+        
         String positionActuelle = tousLesCentres.get(0).getId(); // départ depuis S1
         traverse.add(positionActuelle);
-        livres.add(positionActuelle);
+        if(option==0)
+            livres.add(positionActuelle);
+    
         etiquettes.add("Depart : " + positionActuelle); 
         dureeTotal=0;
 
-        // --- 3. Boucle principale : tant qu'il reste des centres non livrés ---
-        while (livres.size() < aLivre.size()) {
+        //  Boucle principale : tant qu'il reste des centres non livrés 
+        while (livres.size() < tousLesCentres.size()) {
 
             // Lancer Dijkstra depuis la position actuelle
             Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "duree");
@@ -163,9 +163,19 @@ public class Algo {
             dijkstra.clear();
         }
 
-        // --- 5. Coloriage graphique ---
+        // Coloriage graphique 
         // Centres livrés en rouge
-        colorierTournee(g, traverse, "red",   livres);
+        if(option==1){
+            colorierTournee(g, traverse, "blue",   livres);
+        }
+        else if(option==2){
+            colorierTournee(g, traverse, "red",   livres);
+        }
+        else if(option==3){
+            colorierTournee(g, traverse, "green",   livres);
+        }
+        else
+        colorierTournee(g, traverse, "orange",   livres);
 
         return g;
     }
@@ -215,7 +225,7 @@ public class Algo {
             return g;
         }
 
-        // --- Initialisation ---
+        // Initialisation 
         traverseCamion1 = new ArrayList<>();
         traverseCamion2 = new ArrayList<>();
         livres2 = new ArrayList<>();
