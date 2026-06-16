@@ -8,6 +8,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.SingleGraph;
 
 /**
  * Gère la structure globale du réseau de santé. Permet la génération aléatoire
@@ -118,7 +122,7 @@ public class District {
         }
 
     }
-
+    
     /**
      * Convertit la lettre lue dans un fichier CSV en son équivalent énuméré
      * Centre_Sante
@@ -155,7 +159,7 @@ public class District {
      * @throws LettreCentreSanteException Si la lettre du centre est invalide.
      */
     private static void parserLigneCsv(String ligne, District nouveauGraphe) throws LettreCentreSanteException {
-        String[] colonnes = ligne.split(";");   //separateur du fichier ; 
+        String[] colonnes = ligne.split(";",-1);   //separateur du fichier ; 
         String idSource = colonnes[0];      //premiere colonne du fichier c'est l'idSommet
         String typeLettre = colonnes[1];    //deuxième colonne cest le type de centre
 
@@ -167,7 +171,7 @@ public class District {
         for (int i = 2; i < colonnes.length; i++) {     //pour chaque colonnes voir si il y une destinations si oui decouper en 3 colonnes
             String valeurRoute = colonnes[i];
 
-            if (valeurRoute.equals("0")) {
+            if (valeurRoute.isEmpty() ||valeurRoute.equals("0")) {
                 continue;  //saute l'etape 
             }
 
