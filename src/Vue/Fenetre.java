@@ -21,7 +21,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -38,7 +37,6 @@ import sae_java_modèle.CalculateurItineraire;
 import sae_java_modèle.District;
 import sae_java_modèle.LettreCentreSanteException;
 import sae_java_modèle.Type_Centre;
-import scala.collection.immutable.List;
 
 /**
  * Fenêtre principale de l'application MediGPS (Interface Graphique Swing).
@@ -52,7 +50,7 @@ public class Fenetre extends JFrame {
     private Graph carteVisuelle;
     private Viewer viewer;
 
-    private District graphe;
+    private District graphe;  //pour extraire les données et mettre dans carte visuelle
     private JSpinner spinnerNbSommets;
     private JPanel panelGraphe;
     private JButton btnGenerer, btnCharger, btnFiltrer, btnCalculer, btnReintialiser;
@@ -232,10 +230,10 @@ public class Fenetre extends JFrame {
         btnGenerer.addActionListener((e) -> {
 
             int nbSommets = (int) spinnerNbSommets.getValue();
-            graphe = new District();
-            graphe.genererDistrict(nbSommets);
+            this.graphe = new District();
+            this.graphe.genererDistrict(nbSommets);
 
-            this.carteVisuelle = VisualiationDistrict.extraireGraphStream(graphe);
+            this.carteVisuelle = VisualiationDistrict.extraireGraphStream(this.graphe);
             afficherDansPanel(this.carteVisuelle);
             ActualiserCompteur();
         });
@@ -344,10 +342,6 @@ public class Fenetre extends JFrame {
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this, "Veuilez saisir une valeur valide (ex: 0.5)", "Erreur de saisie", JOptionPane.WARNING_MESSAGE);
 
-                    for (Edge route : this.carteVisuelle.getEdgeSet()) {
-                        route.setAttribute("ui.hide");
-
-                    }
                 }
             }
         });
@@ -357,8 +351,8 @@ public class Fenetre extends JFrame {
         tfCentreArrivee.addFocusListener(new ChampsTexteEcouteur("Centre d'arrivée"));
 
         btnCalculer.addActionListener((e) -> {
-            String departChoisi = tfCentreDepart.getText().trim();
-            String arriveeChoisie = tfCentreArrivee.getText().trim();
+            String departChoisi = tfCentreDepart.getText().toUpperCase().trim();
+            String arriveeChoisie = tfCentreArrivee.getText().toUpperCase().trim();
 
             if (departChoisi.isEmpty() || departChoisi.equals("Centre de départ") || arriveeChoisie.equals("Centre d'arrivée") || arriveeChoisie.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Veuillez remplir les champs de départ et d'arrivée.",
@@ -366,20 +360,8 @@ public class Fenetre extends JFrame {
                 return;
             }
 
-            String idDepartReel = null;
-            String idArriveeReel = null;
-
-            for (Node n : carteVisuelle) {
-                String label = (String) n.getAttribute("ui.label");
-                if (label != null && label.equalsIgnoreCase(departChoisi)) {
-                    idDepartReel = n.getId();
-                }
-                if (label != null && label.equalsIgnoreCase(arriveeChoisie)) {
-                    idArriveeReel = n.getId();
-                }
-            }
-
-            if (idDepartReel == null || idArriveeReel == null) {
+      
+            if (departChoisi == null || arriveeChoisie == null) {
                 JOptionPane.showMessageDialog(this,
                         "Le centre de départ ou d'arrivée saisi n'existe pas sur la carte.",
                         "Erreur de saisie",
@@ -391,8 +373,8 @@ public class Fenetre extends JFrame {
                 StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
 
                 CalculateurItineraire calculateur = new CalculateurItineraire(this.carteVisuelle);
-                Path cheminRapide = calculateur.calculerCheminPlusRapide(idDepartReel, idArriveeReel);
-                Path cheminSurEtRapide = calculateur.calculerCheminPlusSurEtRapide(idDepartReel, idArriveeReel);
+                Path cheminRapide = calculateur.calculerCheminPlusRapide(departChoisi, arriveeChoisie);
+                Path cheminSurEtRapide = calculateur.calculerCheminPlusSurEtRapide(departChoisi, arriveeChoisie);
 
                 if (cheminRapide.empty()) {
                     JOptionPane.showMessageDialog(this, "Aucun itinéraire possible entre ces deux centres.", "Information", JOptionPane.INFORMATION_MESSAGE);
@@ -419,7 +401,7 @@ public class Fenetre extends JFrame {
                     double dureeTotaleRapide = calculateur.CalculerDureeTotale(cheminRapide, "duree");
                     this.lblResultatRapide.setText("Trajet Rapide : " + dureeTotaleRapide + " min");
                     double dureeTotaleSurEtRapide = calculateur.CalculerDureeTotale(cheminSurEtRapide, "dureeEstimee");
-                    this.lblResultatSur.setText("Trajet Sûr : " + dureeTotaleSurEtRapide + " min");
+                    this.lblResultatSur.setText("Trajet Sûr : " + String.format("%.2f", dureeTotaleSurEtRapide) + " min");
 
                     if (contientRouteInterdite) {
                         JOptionPane.showMessageDialog(this,

@@ -40,7 +40,7 @@ public class InfoCentreDialogue extends JDialog {
 
     private JLabel lblMaterniteProche, lblNutritionProche, lblOperatoireProche;
     private JLabel lblIdCentre, lblTypeCentre;
-    private JLabel lblDistances, lblDuree, lblDureeEstimee;
+    private JLabel lblDistances, lblDuree;
     private HashMap<Node, Double> coutsDistance;
     private HashMap<Node, Double> coutsDuree;
     private HashMap<Node, Double> coutsDureeEstimee;
@@ -55,7 +55,7 @@ public class InfoCentreDialogue extends JDialog {
     public InfoCentreDialogue(JFrame f, Graph graph, String idCentre) {
         super(f, "Informations sur le centre : " + idCentre, true);
 
-        this.setPreferredSize(new Dimension(900, 900));
+        this.setPreferredSize(new Dimension(900, 600));
 
         this.idCentre = idCentre;
         Node CentreCible = graph.getNode(idCentre);
@@ -85,8 +85,7 @@ public class InfoCentreDialogue extends JDialog {
 
         this.lblDistances = new JLabel("Distances en Kilomètres triée par type et ordre croissant :");
         this.lblDuree = new JLabel("Durée en min triée par type et ordre croissant :");
-        this.lblDureeEstimee = new JLabel("Durée en minutes triée par type et ordre croissant :");
-
+        
         gc.gridy = 0;
         panneau.add(this.lblIdCentre, gc);
         gc.gridy = 1;
@@ -101,38 +100,36 @@ public class InfoCentreDialogue extends JDialog {
             double duree = this.coutsDuree.get(materniteProche);
             double dureeEstimee = this.coutsDureeEstimee.get(materniteProche);
 
-            lblMaterniteProche = new JLabel("Maternité la plus proche : " + this.materniteProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " min");
+            lblMaterniteProche = new JLabel("Centre de maternité la plus proche : " + this.materniteProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " min" + " Durée estimée " + String.format("%.2f", dureeEstimee) + " (min)");
         } else {
             lblMaterniteProche = new JLabel("Aucune maternité proche au centre ");
         }
         panneau.add(lblMaterniteProche, gc);
-        
-        gc.gridx = 1;
-        gc.gridy = 3;
-        
+
+        gc.gridy = 4;
+
         if (NutritionProche != null) {
             double duree = this.coutsDuree.get(NutritionProche);
             double dureeEstimee = this.coutsDureeEstimee.get(NutritionProche);
 
-            lblNutritionProche = new JLabel("Nutrition la plus proche : " + this.NutritionProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " min");
+            lblNutritionProche = new JLabel("Centre de nutrition la plus proche : " + this.NutritionProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " minutes" + " Durée estimée " + String.format("%.2f", dureeEstimee) + " minutes");
         } else {
             lblNutritionProche = new JLabel("Aucune nutrition proche au centre ");
         }
         panneau.add(lblNutritionProche, gc);
-        
-        gc.gridx = 2;
-        gc.gridy = 3;
-        
+
+        gc.gridy = 5;
+
         if (OperatoireProche != null) {
             double duree = this.coutsDuree.get(OperatoireProche);
             double dureeEstimee = this.coutsDureeEstimee.get(OperatoireProche);
 
-            lblOperatoireProche = new JLabel("Bloc opératoire le plus proche : " + this.OperatoireProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " min");
+            lblOperatoireProche = new JLabel("Bloc opératoire le plus proche : " + this.OperatoireProche.getAttribute("ui.label") + " Durée " + String.format("%.2f", duree) + " minutes" + " Durée estimée " + String.format("%.2f", dureeEstimee) + " minutes");
         } else {
             lblOperatoireProche = new JLabel("Aucun bloc opératoire proche au centre ");
         }
         panneau.add(lblOperatoireProche, gc);
-        
+
         JPanel panneauTables = new JPanel(new GridBagLayout());
         GridBagConstraints gcTable = new GridBagConstraints();
         gcTable.insets = new Insets(5, 0, 5, 0);
@@ -170,6 +167,7 @@ public class InfoCentreDialogue extends JDialog {
         CalculateurItineraire calculateur = new CalculateurItineraire(graph);
         this.coutsDuree = calculateur.CalculerCoutsVersTousCentre(idCentre, "duree");
         this.coutsDistance = calculateur.CalculerCoutsVersTousCentre(idCentre, "distance");
+        calculateur.preparerDureeEstimee();
         this.coutsDureeEstimee = calculateur.CalculerCoutsVersTousCentre(idCentre, "dureeEstimee");
     }
 

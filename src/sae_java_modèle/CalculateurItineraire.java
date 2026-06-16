@@ -72,16 +72,7 @@ public class CalculateurItineraire {
      * @throws IllegalArgumentException Si les nœuds n'existent pas.
      */
     public Path calculerCheminPlusSurEtRapide(String idCentreDepart, String idCentreArrivee) throws IllegalArgumentException {
-        for (Edge route : this.graphDistrict.getEdgeSet()) {
-            double duree = ((Number) route.getAttribute("duree")).doubleValue();
-            double fiabilite = ((Number) route.getAttribute("fiabilite")).doubleValue(); //On les met en number pour pouvoir les convertir en double 
-            if (fiabilite < 0.25) {
-                route.setAttribute("dureeEstimee", Double.POSITIVE_INFINITY); // bloque la route elle ne va jamais etre utilise
-            } else {
-                double dureeEstimee = duree * (20.0 - fiabilite) / 10.0;
-                route.setAttribute("dureeEstimee", dureeEstimee);
-            }
-        }
+        this.preparerDureeEstimee();
         return calculerChemin(idCentreDepart, idCentreArrivee, "dureeEstimee");
     }
 
@@ -114,4 +105,17 @@ public class CalculateurItineraire {
         dijkstra.clear();
         return mapCouts;
     }
+    
+     public void preparerDureeEstimee(){
+            for (Edge route : this.graphDistrict.getEdgeSet()) {
+            double duree = ((Number) route.getAttribute("duree")).doubleValue();
+            double fiabilite = ((Number) route.getAttribute("fiabilite")).doubleValue(); //On les met en number pour pouvoir les convertir en double 
+            if (fiabilite < 0.25) {
+                route.setAttribute("dureeEstimee", Double.POSITIVE_INFINITY); // bloque la route elle ne va jamais etre utilise
+            } else {
+                double dureeEstimee = duree * (20.0 - fiabilite) / 10.0;
+                route.setAttribute("dureeEstimee", dureeEstimee);
+            }
+        }
+     }
 }
