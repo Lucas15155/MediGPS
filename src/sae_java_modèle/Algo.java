@@ -46,8 +46,6 @@ public class Algo {
     }
     
     
-    
-    
     /**
      * Algorithme glouton de livraison : depuis S1, livre chaque centre non
      * encore livré en allant toujours vers le plus proche en durée. Utilise
@@ -55,11 +53,34 @@ public class Algo {
      * visités si nécessaire.
      *
      * @param district
+     * @param g
+     * @param option
      * @return
      */
-    public static Graph glouton(District district,Graph g) {
-        tousLesCentres = district.getSommets();
+    public static Graph glouton(District district,Graph g,int option) {
+        tousLesCentres  = district.getSommets();
+        ArrayList aLivre = new ArrayList<>();
+        if(option==0){
+            aLivre= district.getSommets();
+        }
+        if(option==1){
+            for(CentreSante c : district.getSommets()){
+                if(c.getCentre()==Type_Centre.maternite)
+                    aLivre.add(c) ;
+            }
+            }else if(option==2){
+            for(CentreSante c : district.getSommets()){
+                if(c.getCentre()==Type_Centre.operatoire)
+                    aLivre.add(c) ;
+            }
+            }else if(option==3){
+                for(CentreSante c : district.getSommets()){
+                    if(c.getCentre()==Type_Centre.nutrition)
+                        aLivre.add(c) ;
+                }
+            }
 
+        
         if (tousLesCentres.isEmpty()) {
             System.out.println("Le district est vide.");
             return g;
@@ -79,7 +100,7 @@ public class Algo {
         dureeTotal=0;
 
         // --- 3. Boucle principale : tant qu'il reste des centres non livrés ---
-        while (livres.size() < tousLesCentres.size()) {
+        while (livres.size() < aLivre.size()) {
 
             // Lancer Dijkstra depuis la position actuelle
             Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "duree");
@@ -264,7 +285,7 @@ public class Algo {
                
                 String msg = "  [Camion " + numCamionBloque + " : impossible d'atteindre certains centres]";
                 if (camion1Avance) etiquettes2C1.add(msg);
-                else               etiquettes2C2.add(msg);
+                else etiquettes2C2.add(msg);
                 dijkstra.clear();
                 break;
             }
@@ -297,10 +318,10 @@ public class Algo {
                 
                 String livraison;
                 if (i < cheminVersProchain.size() - 1){
-                    livraison= " (transit)";
+                    livraison= "(transit)";
                 }
                 else{
-                    livraison=" (livraison, duree depuis "+posActuelle + " : "+(int)meilleureduree+ " min)";
+                    livraison="(livraison, duree depuis "+posActuelle + " : "+(int)meilleureduree+ " min)";
                 }
                 String ligne = "  -> " + etape + livraison;
                 etiquettesActuelle.add(ligne);

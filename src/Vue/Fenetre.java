@@ -475,48 +475,58 @@ public class Fenetre extends JFrame {
             StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
             
             if (choix == 0) {
-                Algo.glouton(this.graphe, this.carteVisuelle);
+                String[] centres = {"Tous les centres", "Les maternites","Les centres operatoires","Les centres de nutritions"};
+                int option = JOptionPane.showOptionDialog(
+                    this,
+                    "Quels centres voulez vous livrer",
+                    "Choix des centres a livrer",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    centres,
+                    centres[0]
+                );
+                Algo.glouton(this.graphe, this.carteVisuelle,option);
                 // Met à jour les labels dans la barre latérale
                 lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
                         + Algo.getLivres().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
                 lblDureeTotal.setText("Duree total: " + Algo.getDureeTotal() + " min");
 
 
-            // Chemin avec numérotation et indication livraison/transit
-            ArrayList<String> livres   = Algo.getLivres();
-            ArrayList<String> etiquettes = Algo.getEtiquettes();
+                // Chemin avec numérotation et indication livraison/transit
+                ArrayList<String> livres   = Algo.getLivres();
+                ArrayList<String> etiquettes = Algo.getEtiquettes();
 
-            String[] etapes = etiquettes.toArray(new String[0]);
+                String[] etapes = etiquettes.toArray(new String[0]);
 
 
-            // JList avec les étapes
-            listeSommet = new JList<>(etapes);
-            listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
+                // JList avec les étapes
+                listeSommet = new JList<>(etapes);
+                listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
 
-            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
-            scrollPane.setPreferredSize(new Dimension(400, 400));
+                javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
+                scrollPane.setPreferredSize(new Dimension(400, 400));
 
-            // Résumé au-dessus de la liste
-            StringBuilder resume = new StringBuilder();
-            resume.append("Centres livrés : ").append(livres.size())
-                  .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
-            resume.append("    Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+                // Résumé au-dessus de la liste
+                StringBuilder resume = new StringBuilder();
+                resume.append("Centres livrés : ").append(livres.size())
+                      .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
+                resume.append("    Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
 
-            panneauPopup = new JPanel(new BorderLayout(0, 10));
-            panneauPopup.add(new JLabel(resume.toString()), BorderLayout.NORTH);
-            panneauPopup.add(scrollPane, BorderLayout.CENTER);
+                panneauPopup = new JPanel(new BorderLayout(0, 10));
+                panneauPopup.add(new JLabel(resume.toString()), BorderLayout.NORTH);
+                panneauPopup.add(scrollPane, BorderLayout.CENTER);
 
-            JOptionPane.showMessageDialog(
-                this,
-                panneauPopup,
-                "Tournée glouton  " + livres.size() + " centres livrés",
-                JOptionPane.INFORMATION_MESSAGE
-                );
-                    //afficherDansPanel(this.carteVisuelle);
-            }
-        else{
-            Algo.glouton2Camions(this.graphe, this.carteVisuelle);
-            
+                JOptionPane.showMessageDialog(
+                    this,
+                    panneauPopup,
+                    "Tournée glouton  " + livres.size() + " centres livrés",
+                    JOptionPane.INFORMATION_MESSAGE
+                    );
+                }
+            else{
+                Algo.glouton2Camions(this.graphe, this.carteVisuelle);
+
                 // Met à jour les labels dans la barre latérale
                 lblnbEtape.setText("\nChemin complet (" + (int)(Algo.getTraverseCamion1().size()+Algo.getTraverseCamion2().size()) + " etapes, "
                         + Algo.getLivres2().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
@@ -528,67 +538,67 @@ public class Fenetre extends JFrame {
                 }
                 lblDureeTotal.setText("Duree total: " + dureeTotal + " min");
 
-            ArrayList<String> traverseC1 = Algo.getTraverseCamion1();
-            ArrayList<String> traverseC2 = Algo.getTraverseCamion2();
-            int duree1 = Algo.getDureeCamion1();
-            int duree2 = Algo.getDureeCamion2();
+                ArrayList<String> traverseC1 = Algo.getTraverseCamion1();
+                ArrayList<String> traverseC2 = Algo.getTraverseCamion2();
+                int duree1 = Algo.getDureeCamion1();
+                int duree2 = Algo.getDureeCamion2();
 
-            // Construire la liste des étapes pour le JList
-            ArrayList<String> lignes = new ArrayList<>();
+                // Construire la liste des étapes pour le JList
+                ArrayList<String> lignes = new ArrayList<>();
 
-            lignes.add("=== CAMION 1 (bleu) — " + duree1 + " min ===");
-            lignes.addAll(Algo.getEtiquettes2C1());
+                lignes.add("=== CAMION 1 (bleu) — " + duree1 + " min ===");
+                lignes.addAll(Algo.getEtiquettes2C1());
 
-            lignes.add(""); // ligne vide séparateur
-            lignes.add("=== CAMION 2 (orange) — " + duree2 + " min ===");
-            lignes.addAll(Algo.getEtiquettes2C2());
-            
-            lignes.add("Temps du plus lent : " + Math.max(duree1, duree2) + " min");
-           lignes.add("Centres livrés : " + Algo.getLivres2().size()
-                    + " / " + Algo.getTousLesCentres().size());
+                lignes.add(""); // ligne vide séparateur
+                lignes.add("=== CAMION 2 (orange) — " + duree2 + " min ===");
+                lignes.addAll(Algo.getEtiquettes2C2());
 
-            // JList avec coloration par camion
-            final int separateur = Algo.getEtiquettes2C1().size() + 1; // index de la ligne vide
-            listeSommet = new JList<>(lignes.toArray(new String[0]));
-            listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
-            listeSommet.setCellRenderer(new javax.swing.DefaultListCellRenderer() {
-                @Override
-                public java.awt.Component getListCellRendererComponent(
-                        JList<?> list, Object value, int index,
-                        boolean isSelected, boolean cellHasFocus) {
-                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if (!isSelected) {
-                        if (index <= separateur) {
-                            setBackground(new Color(173, 216, 230)); // bleu clair
-                        } else {
-                            setBackground(new Color(255, 213, 128)); // orange clair
+                lignes.add("Temps du plus lent : " + Math.max(duree1, duree2) + " min");
+               lignes.add("Centres livrés : " + Algo.getLivres2().size()
+                        + " / " + Algo.getTousLesCentres().size());
+
+                // JList avec coloration par camion
+                final int separateur = Algo.getEtiquettes2C1().size() + 1; // index de la ligne vide
+                listeSommet = new JList<>(lignes.toArray(new String[0]));
+                listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
+                listeSommet.setCellRenderer(new javax.swing.DefaultListCellRenderer() {
+                    @Override
+                    public java.awt.Component getListCellRendererComponent(
+                            JList<?> list, Object value, int index,
+                            boolean isSelected, boolean cellHasFocus) {
+                        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                        if (!isSelected) {
+                            if (index <= separateur) {
+                                setBackground(new Color(173, 216, 230)); // bleu clair
+                            } else {
+                                setBackground(new Color(255, 213, 128)); // orange clair
+                            }
                         }
+                        return this;
                     }
-                    return this;
-                }
-            });
-            
-            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
-            scrollPane.setPreferredSize(new Dimension(400, 400));
-            
-            // Résumé au-dessus de la liste
-            StringBuilder resume = new StringBuilder();
-            resume.append("Centres livrés : ").append(Algo.getLivres2().size())
-                  .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
-            resume.append("Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
-            
-            panneauPopup = new JPanel(new BorderLayout(0, 10));
-            panneauPopup.add(new JLabel("Résultat 2 camions   "
-                    + "Camion 1 (bleu) : " + duree1 + " min | "
-                    + "Camion 2 (orange) : " + duree2 + " min"),
-                    BorderLayout.NORTH);
-            panneauPopup.add(scrollPane, BorderLayout.CENTER);
+                });
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    panneauPopup,
-                    "Glouton 2 camions",
-                    JOptionPane.INFORMATION_MESSAGE);
+                javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
+                scrollPane.setPreferredSize(new Dimension(400, 400));
+
+                // Résumé au-dessus de la liste
+                StringBuilder resume = new StringBuilder();
+                resume.append("Centres livrés : ").append(Algo.getLivres2().size())
+                      .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
+                resume.append("Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+
+                panneauPopup = new JPanel(new BorderLayout(0, 10));
+                panneauPopup.add(new JLabel("Résultat 2 camions   "
+                        + "Camion 1 (bleu) : " + duree1 + " min | "
+                        + "Camion 2 (orange) : " + duree2 + " min"),
+                        BorderLayout.NORTH);
+                panneauPopup.add(scrollPane, BorderLayout.CENTER);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        panneauPopup,
+                        "Glouton 2 camions",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         });      
     }
