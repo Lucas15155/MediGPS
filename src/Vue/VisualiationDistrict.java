@@ -29,7 +29,6 @@ public class VisualiationDistrict {
             String typeCentre = s.getCentre().name();
             node.setAttribute("ui.class", typeCentre);
         }
-        SpriteManager spriteManager = new SpriteManager(graphAffichage);
         for (CentreSante sommet : modele.getSommets()) {
             for (Route route : sommet.getRoutes()) {
                 String edgeId = sommet.getId() + "-" + route.getDestination();
