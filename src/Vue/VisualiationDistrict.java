@@ -17,7 +17,7 @@ public class VisualiationDistrict {
                 "node { size: 20px; fill-color: #4A90D9; text-mode: normal; text-size: 13px; } "
                 + "node.maternite  { fill-color: blue; } "
                 + "node.operatoire { fill-color: red; } "
-                + "node.nutrition  { size: 15px; fill-color: green; } "
+                + "node.nutrition  { fill-color: green; } "
                 + "edge { fill-color: #A9A9A9; size: 3px; text-offset: 10px, 10px; text-style: bold; text-size: 13px; text-mode: normal; }"
         );
  
