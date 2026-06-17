@@ -55,7 +55,7 @@ public class InfoCentreDialogue extends JDialog {
     public InfoCentreDialogue(JFrame f, Graph graph, String idCentre) {
         super(f, "Informations sur le centre : " + idCentre, true);
 
-        this.setPreferredSize(new Dimension(900, 600));
+        this.setPreferredSize(new Dimension(900, 750));
 
         this.idCentre = idCentre;
         Node CentreCible = graph.getNode(idCentre);
@@ -85,7 +85,7 @@ public class InfoCentreDialogue extends JDialog {
 
         this.lblDistances = new JLabel("Distances en Kilomètres triée par type et ordre croissant :");
         this.lblDuree = new JLabel("Durée en min triée par type et ordre croissant :");
-        
+
         gc.gridy = 0;
         panneau.add(this.lblIdCentre, gc);
         gc.gridy = 1;
@@ -233,11 +233,20 @@ public class InfoCentreDialogue extends JDialog {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value,
                     boolean isSelected, boolean hasFocus, int row, int col) {
+                if (value instanceof Double && (Double) value == Double.POSITIVE_INFINITY) {
+                    value = "Non accessible";
+                }
+
                 super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
                 this.setHorizontalAlignment(JLabel.CENTER);
+
                 String type = (String) t.getValueAt(row, 0);
+                Double val = (Double) t.getModel().getValueAt(t.convertRowIndexToModel(row), 2);
+
                 if (!isSelected) {  //Permet de ne pas écraser la couleur
-                    if (type.equals("maternite")) {
+                    if (val == Double.POSITIVE_INFINITY) {
+                        setBackground(Color.LIGHT_GRAY);
+                    } else if (type.equals("maternite")) {
                         setBackground(new Color(144, 213, 255));
                     } else if (type.equals("nutrition")) {
                         setBackground(new Color(78, 252, 3));
