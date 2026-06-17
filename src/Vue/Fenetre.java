@@ -27,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -476,8 +477,30 @@ public class Fenetre extends JFrame {
                     );
                     Algo.glouton(this.graphe, this.carteVisuelle, option);
                     // Met à jour les labels dans la barre latérale
-                    lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
-                            + Algo.getLivres().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
+                    int livre=0;
+                    int nbcentretraverse = Algo.getTraverse().size();
+                    StringBuilder resume = new StringBuilder();
+                    if(option==1){
+                        livre=Algo.getLivres().size()-this.graphe.CompterCentreParType(Type_Centre.operatoire)-this.graphe.CompterCentreParType(Type_Centre.nutrition);
+                        resume.append("\nChemin complet (" +nbcentretraverse + " etapes, "+ livre + "/" + this.graphe.CompterCentreParType(Type_Centre.maternite) + " centres livres) ");
+                        lblnbEtape.setText(""+resume);
+                    }
+                    else if(option==2){
+                        livre=Algo.getLivres().size()-this.graphe.CompterCentreParType(Type_Centre.maternite)-this.graphe.CompterCentreParType(Type_Centre.nutrition);
+                        resume.append("\nChemin complet (" +nbcentretraverse + " etapes, "+ livre + "/" + this.graphe.CompterCentreParType(Type_Centre.operatoire) + " centres livres) ");
+                        lblnbEtape.setText(""+resume);
+                    }
+                    else if(option==3){
+                        livre=Algo.getLivres().size()-this.graphe.CompterCentreParType(Type_Centre.maternite)-this.graphe.CompterCentreParType(Type_Centre.operatoire);
+                        resume.append("\nChemin complet (" +nbcentretraverse + " etapes, "+ livre + "/" + this.graphe.CompterCentreParType(Type_Centre.nutrition) + " centres livres) ");
+                        lblnbEtape.setText(""+resume);
+                    }else{
+                        livre = Algo.getLivres().size();
+                        lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
+                            + livre + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
+                        
+                    }
+
                     lblDureeTotal.setText("Duree total: " + Algo.getDureeTotal() + " min");
 
                     // Chemin avec numérotation et indication livraison/transit
@@ -490,23 +513,23 @@ public class Fenetre extends JFrame {
                     listeSommet = new JList<>(etapes);
                     listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
 
-                    javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
+                    JScrollPane scrollPane = new JScrollPane(listeSommet);
                     scrollPane.setPreferredSize(new Dimension(400, 400));
 
-                    // Résumé au-dessus de la liste
-                    StringBuilder resume = new StringBuilder();
-                    resume.append("Centres livrés : ").append(livres.size())
-                            .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
-                    resume.append("    Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+//                     Résumé au-dessus de la liste
+//                    StringBuilder resume = new StringBuilder();
+//                    resume.append("Centres livrés : ").append(livres.size())
+//                            .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
+//                    resume.append("    Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
 
                     panneauPopup = new JPanel(new BorderLayout(0, 10));
                     panneauPopup.add(new JLabel(resume.toString()), BorderLayout.NORTH);
                     panneauPopup.add(scrollPane, BorderLayout.CENTER);
-
+                    
                     JOptionPane.showMessageDialog(
                             this,
                             panneauPopup,
-                            "Tournée glouton  " + livres.size() + " centres livrés",
+                            "Tournée glouton  " +livre + " centres livrés",
                             JOptionPane.INFORMATION_MESSAGE
                     );
                 } else {

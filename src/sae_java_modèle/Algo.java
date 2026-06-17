@@ -59,7 +59,6 @@ public class Algo {
      */
     public static Graph glouton(District district,Graph g,int option) {
         tousLesCentres  = district.getSommets();
-//        ArrayList aLivre = new ArrayList<>();
 
         if (tousLesCentres.isEmpty()) { 
             System.out.println("Le district est vide.");
