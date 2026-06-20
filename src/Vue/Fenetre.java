@@ -731,9 +731,10 @@ public class Fenetre extends JFrame {
                     float ordonnee = (float) (e.getY() * tx.getScaleY());
 
                     GraphicElement node = vue.findNodeOrSpriteAt(abscisse, ordonnee);
-
+                    
                     if (node != null) {
-                        new InfoCentreDialogue(Fenetre.this, carteVisuelle, node.getId());
+                        String nodeId = node.getId();
+                        new InfoCentreDialogue(Fenetre.this, carteVisuelle, nodeId);
                     }
                 }
             }
