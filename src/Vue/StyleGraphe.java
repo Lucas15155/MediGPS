@@ -36,6 +36,7 @@ public class StyleGraphe {
     public static void reinitialiserStyleGraphPourCalcul(Graph graph) {
         for (Edge route : graph.getEdgeSet()) {
             route.setAttribute("ui.style", "fill-color: gray; size: 3px; z-index: 0;");
+            route.removeAttribute("ui.hide");
         }
         for (Node centre : graph) {
             centre.setAttribute("ui.style", "stroke-mode: none;");

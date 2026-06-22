@@ -298,7 +298,7 @@ public class Fenetre extends JFrame {
      */
     private void initEcouteurs() {
         btnGenerer.addActionListener((e) -> {
-
+            Reintialiser();
             int nbSommets = (int) spinnerNbSommets.getValue();
             this.graphe = new District();
             this.graphe.genererDistrict(nbSommets);
@@ -310,6 +310,7 @@ public class Fenetre extends JFrame {
         });
 
         btnCharger.addActionListener((e) -> {
+            Reintialiser();
             JFileChooser chooser = new JFileChooser("../graphes/data");
             int result = chooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -503,32 +504,11 @@ public class Fenetre extends JFrame {
         );
 
         btnReintialiser.addActionListener((e) -> {
-            checkMaternite.setSelected(true);
-            checkNutrition.setSelected(true);
-            checkOperatoire.setSelected(true);
-            checkDistance.setSelected(true);
-            checkDuree.setSelected(false);
-            checkFiabilite.setSelected(false);
-
-            tfCentreDepart.setText("Centre de départ");
-            tfCentreArrivee.setText("Centre d'arrivée");
-            tfRouteRisque.setText("Saisissez la fiabilité");
-
-            lblResultatRapide.setText("Trajet rapide : —");
-            lblResultatSur.setText("Trajet sûr : —");
-            lblnbEtape.setText(" ");
-            lblDureeTotal.setText(" ");
-            lblCheminComplet.setText(" ");
-            lblNbMaternite.setText("Nombre de maternité : 0");
-            lblNutrition.setText("Nombre de nutrition : 0");
-            lblNbOperatoire.setText("Nombre de bloc opératoire : 0");
-            
-            if(this.carteVisuelle != null){
-                StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
-            }
+            Reintialiser();
 
             lblbarreStatut.setText("Routes réinitialisées.");
         });
+        
         
         btnGlouton.addActionListener((e) -> {
             if (!districtCharge()) {
@@ -700,6 +680,31 @@ public class Fenetre extends JFrame {
         tfCentreDepart.addFocusListener(new ChampsTexteEcouteur("Centre de départ"));
         tfCentreArrivee.addFocusListener(new ChampsTexteEcouteur("Centre d'arrivée"));
 
+    }
+    private void Reintialiser(){
+        checkMaternite.setSelected(true);
+        checkNutrition.setSelected(true);
+        checkOperatoire.setSelected(true);
+        checkDistance.setSelected(true);
+        checkDuree.setSelected(false);
+        checkFiabilite.setSelected(false);
+
+        tfCentreDepart.setText("Centre de départ");
+        tfCentreArrivee.setText("Centre d'arrivée");
+        tfRouteRisque.setText("Saisissez la fiabilité");
+
+        lblResultatRapide.setText("Trajet rapide : —");
+        lblResultatSur.setText("Trajet sûr : —");
+        lblnbEtape.setText(" ");
+        lblDureeTotal.setText(" ");
+        lblCheminComplet.setText(" ");
+//        lblNbMaternite.setText("Nombre de maternité : 0");
+//        lblNutrition.setText("Nombre de nutrition : 0");
+//        lblNbOperatoire.setText("Nombre de bloc opératoire : 0");
+
+        if(this.carteVisuelle != null){
+            StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
+        }
     }
 
     /**
