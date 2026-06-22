@@ -7,7 +7,7 @@ package sae_java_modèle;
 /**
  * Représente une liaison routière orientée entre deux centres de santé.
  * Une route possède une destination, un indice de fiabilité, une distance et une durée.
- * * @author ilies
+ * * @author Badis
  */
 public class Route {
 
@@ -35,7 +35,7 @@ public class Route {
     /**
      * Retourne l'identifiant du sommet de destination.
      *
-     * @return L'identifiant de destination.
+     * @return L'identifiant de destination. 
      */
     public String getDestination() {
         return this.destination;

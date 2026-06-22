@@ -9,7 +9,7 @@ import java.util.ArrayList;
 /**
  * Représente un centre de santé dans le District.
  * Un sommet possède un identifiant unique, un type de centre de santé, et une liste de routes sortantes.
- * * @author ilies
+ * * @author Badis
  */
 public class CentreSante {
 

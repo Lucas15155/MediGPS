@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * Gère la structure globale du réseau de santé. Permet la génération aléatoire
  * de districts, le chargement CSBe et le calcul de statistiques.
  *
- * * @author ilies
+ * * @author Badis
  */
 public class District {
 
@@ -88,8 +88,6 @@ public class District {
     /**
      * Génère de manière totalement aléatoire un graphe contenant un nombre
      * données de sommets.
-     *
-     *
      *
      * @param nbSommets Le nombre de sommets à générer
      */
@@ -242,7 +240,9 @@ public class District {
     }
 
     /**
-     *
+     *Compte le nombre de centres de santé d'un type donné présents dans le
+     * district.
+     * 
      * @param type du centre de sante a compté
      * @return un entier qui represente le nombre de centre d'un type dans un
      * District

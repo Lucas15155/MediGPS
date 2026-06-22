@@ -6,9 +6,16 @@ import Vue.Fenetre;
  * Point d'entrée principal (Main) du programme d'évaluation SAE Java. Instancie
  * l'interface graphique utilisateur (IHM).
  *
- * * @author ilies
+ * * @author Badis
  */
 public class SAE_JAVA {
+
+    /**
+     * Constructeur par défaut de la classe principale (non utilisé, la classe
+     * n'expose que la méthode {@code main}).
+     */
+    public SAE_JAVA() {
+    }
 
     /**
      * Méthode principale exécutée au démarrage de l'application.
@@ -20,7 +27,5 @@ public class SAE_JAVA {
      */
     public static void main(String[] args) throws LettreCentreSanteException {
         Fenetre fen = new Fenetre();
-        //CalculateurItineraire.glouton(3);       
-
     }
 }

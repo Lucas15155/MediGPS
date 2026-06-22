@@ -34,13 +34,14 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.swing.BorderFactory;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
 /**
+ * JDialogs qui s'affiche lorsque qu'on clique droit sur un centre, et qui
+ * affiche 2 tableaux.
  *
  * @author ilies
  */
@@ -49,8 +50,10 @@ public class InfoCentreDialogue extends JDialog {
     // Couleurs des types de centres
     private static final Color COULEUR_MATERNITE = new Color(219, 234, 254); // bleu clair
     private static final Color COULEUR_NUTRITION = new Color(220, 252, 231); // vert clair
-    private static final Color COULEUR_OPERATOIRE = new Color(254, 226, 226); // rouge clair
-    private static final Color COULEUR_INACCESSIBLE = new Color(220, 220, 220); // gris
+// vert clair
+    private static final Color COULEUR_OPERATOIRE = new Color(254, 226, 226);
+    // gris
+    // rouge clair
 
     private static final Color TEXTE_MATERNITE = new Color(30, 58, 95);
     private static final Color TEXTE_NUTRITION = new Color(20, 83, 45);
@@ -62,28 +65,73 @@ public class InfoCentreDialogue extends JDialog {
     private static final Color TEXTE_LABEL_ESTIMEE = new Color(146, 64, 14);
 
     // Données Dijkstra
+    /**
+     * Coûts en distance depuis le centre cliqué vers tous les autres centres.
+     */
     private HashMap<Node, Double> coutsDistance;
+    /**
+     * Coûts en durée réelle depuis le centre cliqué vers tous les autres
+     * centres.
+     */
+
     private HashMap<Node, Double> coutsDuree;
+
+    /**
+     * Coûts en durée estimée (intégrant la fiabilité) depuis le centre cliqué
+     * vers tous les autres centres.
+     */
     private HashMap<Node, Double> coutsDureeEstimee;
 
     // Centres les plus proches par durée
+    /**
+     * Le centre de type maternité le plus proche selon la durée réelle.
+     */
     private Node materniteProcheDuree;
+
+    /**
+     * Le centre de type nutrition le plus proche selon la durée réelle.
+     */
     private Node nutritionProcheDuree;
+
+    /**
+     * Le centre de type bloc opératoire le plus proche selon la durée réelle.
+     */
     private Node operatoireProcheDuree;
 
     // Centres les plus proches par durée estimée
+    /**
+     * Le centre de type maternité le plus proche selon la durée estimée.
+     */
     private Node materniteProcheDureeEstimee;
+    /**
+     * Le centre de type nutrition le plus proche selon la durée estimée.
+     */
+
     private Node nutritionProcheDureeEstimee;
+    /**
+     * Le centre de type bloc opératoire le plus proche selon la durée estimée.
+     */
     private Node operatoireProcheDureeEstimee;
 
+    /**
+     * L'identifiant du centre de santé sur lequel la boîte de dialogue a été
+     * ouverte.
+     */
     private String idCentre;
+    /**
+     * Le type du centre de santé sur lequel la boîte de dialogue a été ouverte.
+     */
     private String typeCentre;
 
     /**
+     * Crée et affiche la boîte de dialogue d'informations pour un centre de
+     * santé donné, en calculant au préalable les coûts (distance, durée, durée
+     * estimée) vers tous les autres centres ainsi que les centres les plus
+     * proches de chaque type.
      *
-     * @param f
-     * @param graph
-     * @param idCentre
+     * @param f La fenêtre parente à laquelle cette boîte de dialogue est liée.
+     * @param graph Le graphe GraphStream du district affiché.
+     * @param idCentre L'identifiant du centre de santé cliqué.
      */
     public InfoCentreDialogue(JFrame f, Graph graph, String idCentre) {
         super(f, "Informations sur le centre : " + idCentre, false);
@@ -109,6 +157,10 @@ public class InfoCentreDialogue extends JDialog {
         this.setVisible(true);
     }
 
+    /**
+     * Initialise les composants.
+     *
+     */
     private void initComposants() {
         JPanel panneauGlobal = new JPanel(new BorderLayout(8, 0));
         panneauGlobal.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -150,38 +202,38 @@ public class InfoCentreDialogue extends JDialog {
         // Bloc opératoire
         gc.gridy = 4;
         panneauGauche.add(creerPanneauProche("Bloc opératoire", this.operatoireProcheDuree, this.operatoireProcheDureeEstimee), gc);
-        
+
         // Légende en bas
         gc.gridy = 5;
         gc.weighty = 1.0;
         gc.anchor = GridBagConstraints.SOUTH;
         gc.insets = new Insets(8, 0, 0, 0);
         panneauGauche.add(creerLegende(), gc);
-        
+
         // ======== PANNEAU CENTRALE ===================
         JTabbedPane onglets = new JTabbedPane();
         onglets.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        
+
         JScrollPane scrollDistance = new JScrollPane(creerTable(coutsDistance, "Distance (km)"));
         JScrollPane scrollDuree = new JScrollPane(creerTable(coutsDuree, "Distance (min)"));
-        
+
         onglets.addTab("Distances (km)", scrollDistance);
         onglets.addTab("Durée (min)", scrollDuree);
-        
+
         panneauGlobal.add(panneauGauche, BorderLayout.WEST);
         panneauGlobal.add(onglets, BorderLayout.CENTER);
-        
+
         this.setContentPane(panneauGlobal);
-        
+
     }
 
     /**
      * Crée un label colorée
      *
-     * @param texte du label
-     * @param fond couleur en fond
-     * @param texteColor couleur du text
-     * @return le label
+     * @param texte du label.
+     * @param fond couleur en fond.
+     * @param texteColor couleur du text.
+     * @return Le label.
      */
     private JLabel creerLabel(String texte, Color fond, Color texteColor) {
         JLabel label = new JLabel(texte) {
@@ -202,9 +254,12 @@ public class InfoCentreDialogue extends JDialog {
     }
 
     /**
+     * Crée un label coloré représentant le type de centre, avec une couleur de
+     * fond et de texte spécifique selon le type.
      *
-     * @param type
-     * @return
+     * @param type Le type de centre ("maternite", "nutrition", "operatoire", ou
+     * autre).
+     * @return Le label coloré représentant le type.
      */
     private JLabel creerContourType(String type) {
         Color fond;
@@ -228,10 +283,12 @@ public class InfoCentreDialogue extends JDialog {
     }
 
     /**
+     * Crée un panneau affichant côte à côte la durée réelle et la durée estimée
+     * vers le centre le plus proche d'un type donné.
      *
-     * @param noeudDuree
-     * @param noeudEstimee
-     * @return
+     * @param noeudDuree Le noeud le plus proche selon la durée réelle.
+     * @param noeudEstimee Le noeud le plus proche selon la durée estimée.
+     * @return Le panneau contenant les deux labels de durée.
      */
     private JPanel creerPanneauLabel(Node noeudDuree, Node noeudEstimee) {
         JPanel panneau = new JPanel(new GridBagLayout());
@@ -246,14 +303,14 @@ public class InfoCentreDialogue extends JDialog {
         if (noeudDuree != null) {
             texteDuree = String.format("%.2f min", this.coutsDuree.get(noeudDuree));
         } else {
-            texteDuree = "Aucune durée pour ce centre";
+            texteDuree = "Aucune valeurb ";
         }
 
         String texteEstimee;
         if (noeudDuree != null) {
             texteEstimee = String.format("%.2f min", this.coutsDureeEstimee.get(noeudEstimee));
         } else {
-            texteEstimee = "Aucune durée estimée pour ce centre";
+            texteEstimee = "Aucune valeur";
         }
         gc.gridx = 0;
         panneau.add(creerLabel(texteDuree, COULEUR_LABEL_DUREE, TEXTE_LABEL_DUREE));
@@ -262,11 +319,15 @@ public class InfoCentreDialogue extends JDialog {
     }
 
     /**
+     * Crée une carte affichant le titre d'un type de centre ainsi que
+     * l'identifiant et les durées vers le centre de ce type le plus proche.
      *
-     * @param titre
-     * @param noeudDuree
-     * @param noeudEstimee
-     * @return
+     * @param titre Le titre du type de centre affiché (ex: "Maternite").
+     * @param noeudDuree Le centre le plus proche de ce type selon la durée
+     * réelle.
+     * @param noeudEstimee Le centre le plus proche de ce type selon la durée
+     * estimée.
+     * @return Le panneau formant la carte.
      */
     private JPanel creerPanneauProche(String titre, Node noeudDuree, Node noeudEstimee) {
 
@@ -309,6 +370,12 @@ public class InfoCentreDialogue extends JDialog {
         return carte;
     }
 
+    /**
+     * Instancie un panneau qui contient la légende permettant de bien
+     * comprendre les informations.
+     *
+     * @return Le panneau avec la légende.
+     */
     private JPanel creerLegende() {
         JPanel legende = new JPanel(new GridBagLayout());
         legende.setBackground(new Color(248, 248, 248));
@@ -335,8 +402,9 @@ public class InfoCentreDialogue extends JDialog {
     }
 
     /**
+     * Instancie un panneau qui contient l'id su sommet cliqué.
      *
-     * @return
+     * @return Le panneau instancié.
      */
     private JPanel creerBlocInfo() {
         JPanel bloc = new JPanel();
@@ -366,10 +434,12 @@ public class InfoCentreDialogue extends JDialog {
     }
 
     /**
-     * Appel dijkstra
+     * Lance les calculs de plus court chemin (Dijkstra) depuis le centre cliqué
+     * vers tous les autres centres, pour les trois critères durée, distance et
+     * durée estimée.
      *
-     * @param graph
-     * @param idCentre
+     * @param graph Le graphe GraphStream du district.
+     * @param idCentre L'identifiant du centre de départ pour les calculs.
      */
     private void chargerDonnes(Graph graph, String idCentre) {
         CalculateurItineraire calculateur = new CalculateurItineraire(graph);
@@ -379,11 +449,15 @@ public class InfoCentreDialogue extends JDialog {
         this.coutsDureeEstimee = calculateur.CalculerCoutsVersTousCentre(idCentre, "dureeEstimee");
     }
 
-    /**
+   /**
+     * Trouve le centre plus proche selon le type.
      *
-     * @param type
-     * @param coûts
-     * @return
+     * @param type Le type de centre recherché ("maternite", "nutrition", ou
+     * "operatoire").
+     * @param coûts La table associant chaque noeud du graphe à son coût
+     * depuis le centre de départ.
+     * @return Le noeud du type recherché ayant le coût le plus faible, ou
+     * {@code null} si aucun centre de ce type n'est accessible.
      */
     private Node trouverPlusProcheParType(String type, HashMap<Node, Double> coûts) {
         Node plusProche = null;
@@ -400,10 +474,12 @@ public class InfoCentreDialogue extends JDialog {
     }
 
     /**
+     * Instancie un tableau qui contient tout les centres les plus proches du
+     * centre cliqué, trié par type puis par ordre croissant
      *
-     * @param couts
+     * @param couts Une liste associatif
      * @param colonneValeur
-     * @return
+     * @return Un tableau
      */
     private JTable creerTable(HashMap<Node, Double> couts, String colonneValeur) {
 

@@ -45,29 +45,80 @@ import sae_java_modèle.District;
 import sae_java_modèle.LettreCentreSanteException;
 import sae_java_modèle.Type_Centre;
 import sae_java_modèle.*;
-import scala.runtime.ScalaNumberProxy$class;
 
 /**
  * Fenêtre principale de l'application MediGPS (Interface Graphique Swing).
  * Permet à l'utilisateur de charger des districts de santé depuis un fichier
  * CSV ou de générer des réseaux de centres aléatoires.
  *
- * @author ilies
+ * @author Badis
  */
 public class Fenetre extends JFrame {
 
+    /**
+     * Le graphe GraphStream actuellement affiché dans le panneau central.
+     */
     private Graph carteVisuelle;
-    private Viewer viewer;
 
-    private District graphe;  //pour extraire les données et mettre dans carte visuelle
+    /**
+     * Le Viewer GraphStream chargé de rendre {@code carteVisuelle} dans le
+     * panneau Swing.
+     */
+    private Viewer viewer;
+    
+    /**
+     * Le district actuellement chargé, utilisé pour extraire les données.
+     */
+    private District graphe;  
+
+    /**
+     * Le sélecteur numérique permettant de choisir le nombre de sommets à
+     * générer aléatoirement.
+     */
     private JSpinner spinnerNbSommets;
+    /**
+     * Le panneau central contenant l'affichage graphique du district.
+     */
+
     private JPanel panelGraphe;
+
+    /**
+     * Les boutons de contrôle de la fenêtre : génération aléatoire, chargement
+     * CSV, filtrage par fiabilité, calcul d'itinéraire, réinitialisation des
+     * styles, et lancement des tournées de livraison gloutonnes.
+     */
     private JButton btnGenerer, btnCharger, btnFiltrer, btnCalculer, btnReintialiser, btnGlouton;
+    /**
+     * Les champs de saisie texte : seuil de fiabilité pour le filtrage, et
+     * identifiants des centres de départ et d'arrivée pour le calcul
+     * d'itinéraire.
+     */
     private JTextField tfRouteRisque, tfCentreDepart, tfCentreArrivee;
+    /**
+     * La liste affichant les étapes du dernier itinéraire ou tournée calculée.
+     */
+
     private JList<String> listeSommet;
+    /**
+     * Les étiquettes affichant les compteurs de centres par type et les
+     * résultats des derniers calculs d'itinéraire et de tournée.
+     */
     private JLabel lblNbMaternite, lblNbOperatoire, lblNutrition, lblResultatRapide, lblResultatSur, lblnbEtape, lblCheminComplet, lblDureeTotal;
+    /**
+     * Les cases à cocher contrôlant la visibilité des centres par type
+     * (maternité, bloc opératoire, nutrition).
+     */
+
     private JCheckBox checkMaternite, checkOperatoire, checkNutrition;
+    /**
+     * Les cases à cocher contrôlant l'affichage des labels de distance, durée
+     * et fiabilité sur les routes.
+     */
+
     private JCheckBox checkDistance, checkDuree, checkFiabilite;
+    /**
+     * L'étiquette de la barre de statut en bas de la fenêtre.
+     */
 
     private JLabel lblbarreStatut;
 
@@ -94,8 +145,8 @@ public class Fenetre extends JFrame {
      * spinners, conteneurs) au sein de la fenêtre principale.
      */
     private void initComposants() {
+        //======================================== Panneau de controle situé en haut de la fenetre
         JPanel panneauControles = new JPanel(new GridBagLayout());
-
         panneauControles.setBorder(new CompoundBorder(
                 new TitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Contrôles"),
                 new EmptyBorder(4, 8, 4, 8)
@@ -127,6 +178,7 @@ public class Fenetre extends JFrame {
         panneauControles.add(btnFiltrer, gc);
         gc.gridx = 6;
         panneauControles.add(btnReintialiser, gc);
+        //===========================================================
 
         panelGraphe = new JPanel(new BorderLayout());
         panelGraphe.setBackground(Color.LIGHT_GRAY);
@@ -147,6 +199,7 @@ public class Fenetre extends JFrame {
         lblNutrition.setForeground(new Color(0, 140, 0));
         lblNbOperatoire.setForeground(Color.RED);
 
+        //================= Panneau qui donne les informations sur le nombres de centre
         JPanel panneauReseau = new JPanel(new GridBagLayout());
         panneauReseau.setBorder(new CompoundBorder(
                 new TitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Réseau"),
@@ -173,6 +226,7 @@ public class Fenetre extends JFrame {
         checkDuree = new JCheckBox("Durée (min)", false);
         checkFiabilite = new JCheckBox("Fiabilité", false);
 
+        //==================== Panneau d'affichage
         JPanel panneauAffichage = new JPanel(new GridBagLayout());
         panneauAffichage.setBorder(new CompoundBorder(
                 new TitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Affichage"),
@@ -217,8 +271,8 @@ public class Fenetre extends JFrame {
         lblResultatRapide.setForeground(new Color(0, 139, 139));
         lblResultatSur.setForeground(Color.MAGENTA);
 
+        //======================= Panneau sur les trajets d'itinéraires
         JPanel panneauItineraire = new JPanel(new GridBagLayout());
-
         panneauItineraire.setBorder(new CompoundBorder(
                 new TitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Itinéraire"),
                 new EmptyBorder(4, 6, 4, 6)
@@ -246,6 +300,7 @@ public class Fenetre extends JFrame {
         lblDureeTotal = new JLabel(" ");
         lblCheminComplet = new JLabel(" ");
 
+        //=============================== Panneau des informations sur les livraisons
         JPanel panneauGlouton = new JPanel(new GridBagLayout());
         panneauGlouton.setBorder(new CompoundBorder(
                 new TitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Tournée"),
@@ -267,6 +322,7 @@ public class Fenetre extends JFrame {
         gcG.gridy = 3;
         panneauGlouton.add(lblCheminComplet, gcG);
 
+        //============================================= panneau de gauche dans la fentre
         JPanel panneauInfo = new JPanel(new GridBagLayout());
         panneauInfo.setBorder(new EmptyBorder(6, 6, 6, 6));
         panneauInfo.setPreferredSize(new Dimension(300, 0));
@@ -285,10 +341,11 @@ public class Fenetre extends JFrame {
         gcW.gridy = 3;
         panneauInfo.add(panneauGlouton, gcW);
 
-        add(panneauControles, BorderLayout.NORTH);
-        add(panelGraphe, BorderLayout.CENTER);
-        add(panneauInfo, BorderLayout.WEST);
-        add(lblbarreStatut, BorderLayout.SOUTH);
+        //=================ASSEMBLAGE DES PANNEAUX
+        this.add(panneauControles, BorderLayout.NORTH);
+        this.add(panelGraphe, BorderLayout.CENTER);
+        this.add(panneauInfo, BorderLayout.WEST);
+        this.add(lblbarreStatut, BorderLayout.SOUTH);
 
         this.pack();
     }
@@ -297,6 +354,7 @@ public class Fenetre extends JFrame {
      * Regroupe tous les écouteurs d'événements de la fenêtre.
      */
     private void initEcouteurs() {
+        //================ Bouton générer
         btnGenerer.addActionListener((e) -> {
 
             int nbSommets = (int) spinnerNbSommets.getValue();
@@ -309,6 +367,7 @@ public class Fenetre extends JFrame {
             lblbarreStatut.setText("District généré avec succès!");
         });
 
+        //====================== Bouton qui charge district de puis un graphe Csv
         btnCharger.addActionListener((e) -> {
             JFileChooser chooser = new JFileChooser("../graphes/data");
             int result = chooser.showOpenDialog(this);
@@ -332,24 +391,24 @@ public class Fenetre extends JFrame {
             if (this.carteVisuelle == null) {
                 return;
             }
-            StyleGraphe.AfficherCentreParType(this.carteVisuelle, "maternite", checkMaternite.isSelected());
-            StyleGraphe.AfficherOuMasquerRoutes(this.carteVisuelle);
+            StyleDistrict.AfficherCentreParType(this.carteVisuelle, "maternite", checkMaternite.isSelected());
+            StyleDistrict.AfficherOuMasquerRoutes(this.carteVisuelle);
         });
 
         checkNutrition.addActionListener((e) -> {
             if (this.carteVisuelle == null) {
                 return;
             }
-            StyleGraphe.AfficherCentreParType(this.carteVisuelle, "nutrition", checkNutrition.isSelected());
-            StyleGraphe.AfficherOuMasquerRoutes(this.carteVisuelle);
+            StyleDistrict.AfficherCentreParType(this.carteVisuelle, "nutrition", checkNutrition.isSelected());
+            StyleDistrict.AfficherOuMasquerRoutes(this.carteVisuelle);
         });
 
         checkOperatoire.addActionListener((e) -> {
             if (this.carteVisuelle == null) {
                 return;
             }
-            StyleGraphe.AfficherCentreParType(this.carteVisuelle, "operatoire", checkOperatoire.isSelected());
-            StyleGraphe.AfficherOuMasquerRoutes(this.carteVisuelle);
+            StyleDistrict.AfficherCentreParType(this.carteVisuelle, "operatoire", checkOperatoire.isSelected());
+            StyleDistrict.AfficherOuMasquerRoutes(this.carteVisuelle);
         });
 
         ActionListener ecouteurLabels = e -> {
@@ -437,7 +496,7 @@ public class Fenetre extends JFrame {
             }
             String departChoisi = tfCentreDepart.getText().toUpperCase().trim();
             String arriveeChoisie = tfCentreArrivee.getText().toUpperCase().trim();
-            
+
             if (departChoisi == null || arriveeChoisie == null) {
                 JOptionPane.showMessageDialog(this,
                         "Le centre de départ ou d'arrivée saisi n'existe pas sur la carte.",
@@ -445,17 +504,16 @@ public class Fenetre extends JFrame {
                         JOptionPane.ERROR_MESSAGE);
                 return; // On arrête tout si le centre n'existe pas
             }
-            
+
             if (departChoisi.isEmpty() || departChoisi.equals("Centre de départ") || arriveeChoisie.equals("Centre d'arrivée") || arriveeChoisie.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Veuillez remplir les champs de départ et d'arrivée.",
                         "Champs manquants", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            
             try {
                 //Nettoyage de la carte
-                StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
+                StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
 
                 CalculateurItineraire calculateur = new CalculateurItineraire(this.carteVisuelle);
                 Path cheminRapide = calculateur.calculerCheminPlusRapide(departChoisi, arriveeChoisie);
@@ -465,7 +523,7 @@ public class Fenetre extends JFrame {
                     JOptionPane.showMessageDialog(this, "Aucun itinéraire possible entre ces deux centres.", "Information", JOptionPane.INFORMATION_MESSAGE);
 
                 } else {
-                    StyleGraphe.appliquerStyleTrajetRapide(cheminRapide);
+                    StyleDistrict.appliquerStyleTrajetRapide(cheminRapide);
 
                     boolean contientRouteInterdite = false;
 
@@ -475,7 +533,7 @@ public class Fenetre extends JFrame {
                             contientRouteInterdite = true;
                         }
                     }
-                    StyleGraphe.appliquerStyleTrajetSur(cheminSurEtRapide);
+                    StyleDistrict.appliquerStyleTrajetSur(cheminSurEtRapide);
 
                     for (Edge edge : this.carteVisuelle.getEdgeSet()) { //Nettoyage les marqueur temporelles
                         edge.removeAttribute("estRapide");
@@ -522,14 +580,14 @@ public class Fenetre extends JFrame {
             lblNbMaternite.setText("Nombre de maternité : 0");
             lblNutrition.setText("Nombre de nutrition : 0");
             lblNbOperatoire.setText("Nombre de bloc opératoire : 0");
-            
-            if(this.carteVisuelle != null){
-                StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
+
+            if (this.carteVisuelle != null) {
+                StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
             }
 
             lblbarreStatut.setText("Routes réinitialisées.");
         });
-        
+
         btnGlouton.addActionListener((e) -> {
             if (!districtCharge()) {
                 return;
@@ -555,7 +613,7 @@ public class Fenetre extends JFrame {
             JPanel panneauPopup;
             // Réinitialiser les styles avant de lancer l'algo
             // pour ne pas empiler les colorations
-            StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
+            StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
 
             if (choix == 0) {
                 String[] centres = {"Tous les centres", "Les maternites", "Les centres operatoires", "Les centres de nutritions"};
@@ -705,7 +763,8 @@ public class Fenetre extends JFrame {
     /**
      * Nettoie le conteneur visuel et y intègre l'arborescence graphique
      * dynamique générée par l'instance de Graph GraphStream passée en
-     * paramètre.
+     * paramètre, et intercepte le clique droit sur un centre pour afficher une
+     * JDialogs.
      *
      * @param graph Le graphe GraphStream à injecter dans l'interface Swing.
      */
@@ -731,7 +790,7 @@ public class Fenetre extends JFrame {
                     float ordonnee = (float) (e.getY() * tx.getScaleY());
 
                     GraphicElement node = vue.findNodeOrSpriteAt(abscisse, ordonnee);
-                    
+
                     if (node != null) {
                         String nodeId = node.getId();
                         new InfoCentreDialogue(Fenetre.this, carteVisuelle, nodeId);
@@ -757,10 +816,20 @@ public class Fenetre extends JFrame {
         }
     }
 
+    /**
+     * Écouteur de focus pour les champs de saisie texte affichant un texte
+     * d'aide par défaut (placeholder). Efface ce texte quand le champ reçoit le
+     * focus, et le restaure si le champ est laissé vide en perdant le focus.
+     */
     private class ChampsTexteEcouteur implements FocusListener {
 
         private String texteParDefaut;
 
+        /**
+         * Crée un écouteur associé à un texte d'aide par défaut donné.
+         *
+         * @param texte Le texte d'aide à afficher quand le champs est vide.
+         */
         public ChampsTexteEcouteur(String texte) {
             this.texteParDefaut = texte;
         }
@@ -783,6 +852,12 @@ public class Fenetre extends JFrame {
         }
     }
 
+    /**
+     * Vérifie que le district est bien chargée, si non affiche un boite de
+     * dialogue modale.
+     *
+     * @return {@code true} si un district est chargé, {@code false} sinon.
+     */
     private boolean districtCharge() {
         if (this.graphe == null) {
             JOptionPane.showMessageDialog(this,
@@ -793,8 +868,15 @@ public class Fenetre extends JFrame {
         }
         return true;
     }
-    
-    private String fiabiliteEnFraction(double fiabilite){
+
+     /**
+     * Transforme la fiabilite qui est une probabilite entre 0.2 et 1.0 en une
+     * fraction sur 10.
+     *
+     * @param fiabilite La fiabilité à convertir, comprise entre 0.2 et 1.0.
+     * @return La fiabilité exprimée sous forme de fraction sur 10 (ex: "8/10").
+     */
+    private String fiabiliteEnFraction(double fiabilite) {
         int fraction = (int) Math.round(fiabilite * 10);
         return fraction + "/10";
     }

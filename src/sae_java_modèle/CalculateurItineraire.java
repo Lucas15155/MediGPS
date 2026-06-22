@@ -31,6 +31,18 @@ public class CalculateurItineraire {
         this.graphDistrict = graphe;
     }
 
+    /**
+     * Calcule le chemin le plus court d'un centre de départ à un centre
+     * d'arrivé.
+     *
+     * @param idDepart Identifiant du noeud de départ.
+     * @param idArrivee Identifiant du noeud d'arrivée.
+     * @param attribut Le nom de l'attribut des arêtes à utiliser comme poids
+     * pour le calcul (ex: "durée", "dureeEstimee").
+     * @return le chemin le plus court
+     * @throws IllegalArgumentException Si les noeuds de départ ou d'arrivée
+     * n'existent pas dans le graphe.
+     */
     public Path calculerChemin(String idDepart, String idArrivee, String attribut) throws IllegalArgumentException {
         Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, "resultat", attribut);
         dijkstra.init(this.graphDistrict);
@@ -79,8 +91,8 @@ public class CalculateurItineraire {
     /**
      * Calcule la somme de la durée du chemin
      *
-     * @param chemin
-     * @param attribut
+     * @param chemin Le chemin dont on veut calculer la durée totale.
+     * @param attribut Le nom de l'attribut des arêtes à sommer (ex: "duree").
      * @return Un double La durée totale du chemin
      */
     public double CalculerDureeTotale(Path chemin, String attribut) {
@@ -91,6 +103,16 @@ public class CalculateurItineraire {
         return dureeTotale;
     }
 
+    /**
+     * Calcule, à partir d'un centre de départ, le coût du plus court chemin
+     * vers chacun des autres centres du graphe.
+     *
+     * @param idDepart Identifiant du noeud de départ.
+     * @param attribut Le nom de l'attribut des arêtes à utiliser comme poids
+     * pour le calcul (ex: "duree", "dureeEstimee").
+     * @return Une HashMap associant chaque noeud du graphe (sauf le noeud de
+     * départ) au coût du plus court chemin depuis le noeud de départ.
+     */
     public HashMap<Node, Double> CalculerCoutsVersTousCentre(String idDepart, String attribut) {
         Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, "resultat", attribut);
         dijkstra.init(this.graphDistrict);
@@ -105,17 +127,21 @@ public class CalculateurItineraire {
         dijkstra.clear();
         return mapCouts;
     }
-    
-     public void preparerDureeEstimee(){
-            for (Edge route : this.graphDistrict.getEdgeSet()) {
+
+    /**
+     * Initialise l'attribut durée estimée pour qu'elle puisse être utlisée.
+     *
+     */
+    public void preparerDureeEstimee() {
+        for (Edge route : this.graphDistrict.getEdgeSet()) {
             double duree = ((Number) route.getAttribute("duree")).doubleValue();
             double fiabilite = ((Number) route.getAttribute("fiabilite")).doubleValue(); //On les met en number pour pouvoir les convertir en double 
             if (fiabilite < 0.25) {
                 route.setAttribute("dureeEstimee", Double.POSITIVE_INFINITY); // bloque la route elle ne va jamais etre utilise
             } else {
-                double dureeEstimee = duree * (20.0 - fiabilite) / 10.0;
+                double dureeEstimee = duree * (20.0 - fiabilite) / 10.0; //Intégration de la fiabilite dans la durée
                 route.setAttribute("dureeEstimee", dureeEstimee);
             }
         }
-     }
+    }
 }

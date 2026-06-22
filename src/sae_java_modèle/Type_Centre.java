@@ -5,10 +5,9 @@
 package sae_java_modèle;
 
 /**
- * Représente les différents types de centres de santé disponibles dans le
- * réseau.
+ * Représente les différents types de centres de santé disponibles dans un district.
  *
- * * @author ilies
+ * * @author Badis
  */
 public enum Type_Centre {
     /**

@@ -8,8 +8,25 @@ import sae_java_modèle.District;
 import sae_java_modèle.Route;
 import sae_java_modèle.CentreSante;
 
+/**
+ * Fais le lien entre le modèle de donnée et l'affichage graphStream.
+ * 
+ * @author Badis
+ */
 public class VisualiationDistrict {
-
+    
+    /**
+     * Le constructeur n'est pas destinée à etre instancié.
+     * 
+     */
+    public VisualiationDistrict(){}
+    /**
+     * Affiche le district à partir du modele passée en paramètre.
+     * 
+     * @param modele Le modèle District à partir duquel construire le graphe
+     * d'affichage (centres de santé et routes).
+     * @return Le district à afficher.
+     */
     public static Graph extraireGraphStream(District modele) {
         Graph graphAffichage = new SingleGraph("MediGPS");
 
@@ -24,7 +41,7 @@ public class VisualiationDistrict {
 
         for (CentreSante s : modele.getSommets()) {
             Node node = graphAffichage.addNode(s.getId());
-            node.setAttribute("ui.label", s.getId() + s.getLettre());
+            node.setAttribute("ui.label", s.getId() + "" + s.getLettre());
             String typeCentre = s.getCentre().name();
             node.setAttribute("ui.class", typeCentre);
         }
