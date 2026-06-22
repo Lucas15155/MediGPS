@@ -9,6 +9,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -17,6 +18,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -33,6 +35,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -94,33 +98,33 @@ public class Fenetre extends JFrame {
      * d'itinéraire.
      */
     private JTextField tfRouteRisque, tfCentreDepart, tfCentreArrivee;
+
     /**
      * La liste affichant les étapes du dernier itinéraire ou tournée calculée.
      */
-
     private JList<String> listeSommet;
+
     /**
      * Les étiquettes affichant les compteurs de centres par type et les
      * résultats des derniers calculs d'itinéraire et de tournée.
      */
     private JLabel lblNbMaternite, lblNbOperatoire, lblNutrition, lblResultatRapide, lblResultatSur, lblnbEtape, lblCheminComplet, lblDureeTotal;
+
     /**
      * Les cases à cocher contrôlant la visibilité des centres par type
      * (maternité, bloc opératoire, nutrition).
      */
-
     private JCheckBox checkMaternite, checkOperatoire, checkNutrition;
-    /**
-     * Les cases à cocher contrôlant l'affichage des labels de distance, durée
-     * et fiabilité sur les routes.
-     */
 
-    private JCheckBox checkDistance, checkDuree, checkFiabilite;
     /**
      * L'étiquette de la barre de statut en bas de la fenêtre.
      */
-
     private JLabel lblbarreStatut;
+
+    /**
+     * Bouton d'affichage des informations d'un graphe
+     */
+    private JButton btnAfficher;
 
     /**
      * Constructeur de la fenêtre. Initialise les propriétés de la fenêtre
@@ -222,9 +226,7 @@ public class Fenetre extends JFrame {
         checkMaternite = new JCheckBox("Maternités", true);
         checkNutrition = new JCheckBox("Nutrition", true);
         checkOperatoire = new JCheckBox("Blocs opératoires", true);
-        checkDistance = new JCheckBox("Distance (km)", false);
-        checkDuree = new JCheckBox("Durée (min)", false);
-        checkFiabilite = new JCheckBox("Fiabilité", false);
+        btnAfficher = new JButton("Afficher les informations");
 
         //==================== Panneau d'affichage
         JPanel panneauAffichage = new JPanel(new GridBagLayout());
@@ -251,16 +253,8 @@ public class Fenetre extends JFrame {
         gcA.gridy = 3;
         panneauAffichage.add(checkOperatoire, gcA);
 
-        JLabel lblLabels = new JLabel("Informations des routes :");
-        lblLabels.setFont(lblLabels.getFont().deriveFont(Font.ITALIC, 11f));
         gcA.gridy = 4;
-        panneauAffichage.add(lblLabels, gcA);
-        gcA.gridy = 5;
-        panneauAffichage.add(checkDistance, gcA);
-        gcA.gridy = 6;
-        panneauAffichage.add(checkDuree, gcA);
-        gcA.gridy = 7;
-        panneauAffichage.add(checkFiabilite, gcA);
+        panneauAffichage.add(btnAfficher, gcA);
 
         tfCentreDepart = new JTextField("Centre de départ", 15);
         tfCentreArrivee = new JTextField("Centre d'arrivée", 15);
@@ -412,286 +406,353 @@ public class Fenetre extends JFrame {
             StyleDistrict.AfficherOuMasquerRoutes(this.carteVisuelle);
         });
 
-        checkDistance.addActionListener((e) -> actualiserLabelsRoutes());
-        checkDuree.addActionListener((e) -> actualiserLabelsRoutes());
-        checkFiabilite.addActionListener((e) -> actualiserLabelsRoutes());
-
-        btnFiltrer.addActionListener((e) -> {
+        btnAfficher.addActionListener((e) -> {
             if (!districtCharge()) {
                 return;
             }
-            if (this.carteVisuelle != null) {
-                String texteSaisi = tfRouteRisque.getText();
-                try {
 
-                    double seuilRisque = Double.parseDouble(texteSaisi);
+            // --- Construction de la liste complète des routes ---
+            DefaultListModel<String> modelComplet = new DefaultListModel<>();
+            for (Edge edge : this.carteVisuelle.getEdgeSet()) {
+                double fiabilite = ((Number) edge.getAttribute("fiabilite")).doubleValue();
+                String fiabiliteTexte = fiabiliteEnFraction(fiabilite);
 
-                    for (Edge routes : carteVisuelle.getEdgeSet()) {
+                modelComplet.addElement(edge.getId()
+                        + "  |  Fiabilité: " + fiabiliteTexte
+                        + "  |  Durée: " + edge.getAttribute("duree") + " min"
+                        + "  |  Distance: " + edge.getAttribute("distance") + " km");
+            }
 
-                        Object attributFiabilite = (Double) routes.getAttribute("fiabilite");
+            JList<String> liste = new JList<>(modelComplet);
 
-                        if (attributFiabilite != null) {
-                            double fiabilite = ((Number) attributFiabilite).doubleValue();
-                            if (fiabilite <= seuilRisque) {
-                                routes.removeAttribute("ui.hide");
-                                routes.setAttribute("ui.style", "fill-color: red; size: 2px;");
-                            } else {
-                                routes.setAttribute("ui.hide");
-                                routes.removeAttribute("ui.style");
-                            }
+            JTextField champRecherche = new JTextField();
+            champRecherche.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent ev) {
+                    filtrer();
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent ev) {
+                    filtrer();
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent ev) {
+                    filtrer();
+                }
+
+                private void filtrer() {
+                    String texte = champRecherche.getText().toLowerCase().trim();
+                    if (texte.isEmpty()) {
+                        liste.setModel(modelComplet);
+                        return;
+                    }
+                    DefaultListModel<String> modelFiltre = new DefaultListModel<>();
+                    for (int i = 0; i < modelComplet.size(); i++) {
+                        String ligne = modelComplet.get(i);
+                        if (ligne.toLowerCase().contains(texte)) {
+                            modelFiltre.addElement(ligne);
                         }
                     }
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(this, "Veuilez saisir une valeur valide (ex: 0.5)", "Erreur de saisie", JOptionPane.WARNING_MESSAGE);
-                    tfRouteRisque.setText("");
-                    lblbarreStatut.setText("Aucun seuil de fiabilité saisie!");
+                    liste.setModel(modelFiltre);
                 }
-            }
+            });
+
+            JPanel panneau = new JPanel(new BorderLayout(5, 5));
+            panneau.add(champRecherche, BorderLayout.NORTH);
+            panneau.add(new JScrollPane(liste), BorderLayout.CENTER);
+            panneau.setPreferredSize(new Dimension(450, 400));
+
+            JOptionPane.showMessageDialog(this, panneau, "Routes : fiabilité, durée, distance", JOptionPane.PLAIN_MESSAGE);
         });
 
-        btnCalculer.addActionListener((e) -> {
-            if (!districtCharge()) {
-                return;
-            }
-            String departChoisi = tfCentreDepart.getText().toUpperCase().trim();
-            String arriveeChoisie = tfCentreArrivee.getText().toUpperCase().trim();
+        btnFiltrer.addActionListener(
+                (e) -> {
+                    if (!districtCharge()) {
+                        return;
+                    }
+                    if (this.carteVisuelle != null) {
+                        String texteSaisi = tfRouteRisque.getText();
+                        try {
 
-            if (departChoisi == null || arriveeChoisie == null) {
-                JOptionPane.showMessageDialog(this,
-                        "Le centre de départ ou d'arrivée saisi n'existe pas sur la carte.",
-                        "Erreur de saisie",
-                        JOptionPane.ERROR_MESSAGE);
-                return; // On arrête tout si le centre n'existe pas
-            }
+                            double seuilRisque = Double.parseDouble(texteSaisi);
 
-            if (departChoisi.isEmpty() || departChoisi.equals("Centre de départ") || arriveeChoisie.equals("Centre d'arrivée") || arriveeChoisie.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Veuillez remplir les champs de départ et d'arrivée.",
-                        "Champs manquants", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+                            for (Edge routes : carteVisuelle.getEdgeSet()) {
 
-            try {
-                //Nettoyage de la carte
-                StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
+                                Object attributFiabilite = (Double) routes.getAttribute("fiabilite");
 
-                CalculateurItineraire calculateur = new CalculateurItineraire(this.carteVisuelle);
-                Path cheminRapide = calculateur.calculerCheminPlusRapide(departChoisi, arriveeChoisie);
-                Path cheminSurEtRapide = calculateur.calculerCheminPlusSurEtRapide(departChoisi, arriveeChoisie);
-
-                if (cheminRapide.empty()) {
-                    JOptionPane.showMessageDialog(this, "Aucun itinéraire possible entre ces deux centres.", "Information", JOptionPane.INFORMATION_MESSAGE);
-
-                } else {
-                    StyleDistrict.appliquerStyleTrajetRapide(cheminRapide);
-
-                    boolean contientRouteInterdite = false;
-
-                    for (Edge route : cheminSurEtRapide.getEdgePath()) {
-                        double poids = ((Number) route.getAttribute("dureeEstimee")).doubleValue();
-                        if (poids >= 999999.0) {
-                            contientRouteInterdite = true;
+                                if (attributFiabilite != null) {
+                                    double fiabilite = ((Number) attributFiabilite).doubleValue();
+                                    if (fiabilite <= seuilRisque) {
+                                        routes.removeAttribute("ui.hide");
+                                        routes.setAttribute("ui.style", "fill-color: red; size: 2px;");
+                                    } else {
+                                        routes.setAttribute("ui.hide");
+                                        routes.removeAttribute("ui.style");
+                                    }
+                                }
+                            }
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(this, "Veuilez saisir une valeur valide (ex: 0.5)", "Erreur de saisie", JOptionPane.WARNING_MESSAGE);
+                            tfRouteRisque.setText("");
+                            lblbarreStatut.setText("Aucun seuil de fiabilité saisie!");
                         }
                     }
-                    StyleDistrict.appliquerStyleTrajetSur(cheminSurEtRapide);
-
-                    for (Edge edge : this.carteVisuelle.getEdgeSet()) { //Nettoyage les marqueur temporelles
-                        edge.removeAttribute("estRapide");
-                    }
-                    for (Node node : carteVisuelle) {
-                        node.removeAttribute("estRapideNode");
-                    }
-                    double dureeTotaleRapide = calculateur.CalculerDureeTotale(cheminRapide, "duree");
-                    this.lblResultatRapide.setText("Trajet Rapide : " + dureeTotaleRapide + " min");
-                    double dureeTotaleSurEtRapide = calculateur.CalculerDureeTotale(cheminSurEtRapide, "dureeEstimee");
-                    this.lblResultatSur.setText("Trajet Sûr : " + String.format("%.2f", dureeTotaleSurEtRapide) + " min");
-
-                    if (contientRouteInterdite) {
-                        JOptionPane.showMessageDialog(this,
-                                "Impossible de trouver un chemin totalement sûr. Le seul itinéraire possible emprunte une route dont la fiabilité est dangereuse( <0.25).",
-                                "Alerte Sécurité",
-                                JOptionPane.WARNING_MESSAGE);
-                    }
                 }
-
-            } catch (IllegalArgumentException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
-            }
-        }
         );
 
-        btnReintialiser.addActionListener((e) -> {
-            this.Reintialiser();
-        });
+        btnCalculer.addActionListener(
+                (e) -> {
+                    if (!districtCharge()) {
+                        return;
+                    }
+                    String departChoisi = tfCentreDepart.getText().toUpperCase().trim();
+                    String arriveeChoisie = tfCentreArrivee.getText().toUpperCase().trim();
 
-        btnGlouton.addActionListener((e) -> {
-            if (!districtCharge()) {
-                return;
-            }
-            // Demander le nombre de camions 
-            String[] options = {"1 camion", "2 camions"};
-            int choix = JOptionPane.showOptionDialog(
-                    this,
-                    "Combien de camions sont disponibles ?",
-                    "Choix du nombre de camions",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    options[0]
-            );
+                    if (departChoisi == null || arriveeChoisie == null) {
+                        JOptionPane.showMessageDialog(this,
+                                "Le centre de départ ou d'arrivée saisi n'existe pas sur la carte.",
+                                "Erreur de saisie",
+                                JOptionPane.ERROR_MESSAGE);
+                        return; // On arrête tout si le centre n'existe pas
+                    }
 
-            // L'utilisateur a fermé la fenêtre sans choisir
-            if (choix == JOptionPane.CLOSED_OPTION) {
-                return;
-            }
+                    if (departChoisi.isEmpty() || departChoisi.equals("Centre de départ") || arriveeChoisie.equals("Centre d'arrivée") || arriveeChoisie.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "Veuillez remplir les champs de départ et d'arrivée.",
+                                "Champs manquants", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
 
-            JPanel panneauPopup;
-            // Réinitialiser les styles avant de lancer l'algo
-            // pour ne pas empiler les colorations
-            StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
+                    try {
+                        //Nettoyage de la carte
+                        StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
 
-            if (choix == 0) {
-                String[] centres = {"Tous les centres", "Les maternites", "Les centres operatoires", "Les centres de nutritions"};
-                int option = JOptionPane.showOptionDialog(
-                        this,
-                        "Quels centres voulez vous livrer",
-                        "Choix des centres a livrer",
-                        JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        centres,
-                        centres[0]
-                );
-                Algo.glouton(this.graphe, this.carteVisuelle, option);
-                // Met à jour les labels dans la barre latérale
-                int livre = 0;
-                int nbcentretraverse = Algo.getTraverse().size();
-                StringBuilder resume = new StringBuilder();
-                if (option == 1) {
-                    livre = Algo.getLivres().size() - this.graphe.CompterCentreParType(Type_Centre.operatoire) - this.graphe.CompterCentreParType(Type_Centre.nutrition);
-                    resume.append("\nChemin complet (" + nbcentretraverse + " etapes, " + livre + "/" + this.graphe.CompterCentreParType(Type_Centre.maternite) + " centres livres) ");
-                    lblnbEtape.setText("" + resume);
-                } else if (option == 2) {
-                    livre = Algo.getLivres().size() - this.graphe.CompterCentreParType(Type_Centre.maternite) - this.graphe.CompterCentreParType(Type_Centre.nutrition);
-                    resume.append("\nChemin complet (" + nbcentretraverse + " etapes, " + livre + "/" + this.graphe.CompterCentreParType(Type_Centre.operatoire) + " centres livres) ");
-                    lblnbEtape.setText("" + resume);
-                } else if (option == 3) {
-                    livre = Algo.getLivres().size() - this.graphe.CompterCentreParType(Type_Centre.maternite) - this.graphe.CompterCentreParType(Type_Centre.operatoire);
-                    resume.append("\nChemin complet (" + nbcentretraverse + " etapes, " + livre + "/" + this.graphe.CompterCentreParType(Type_Centre.nutrition) + " centres livres) ");
-                    lblnbEtape.setText("" + resume);
-                } else {
-                    livre = Algo.getLivres().size();
-                    lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
-                            + livre + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
+                        CalculateurItineraire calculateur = new CalculateurItineraire(this.carteVisuelle);
+                        Path cheminRapide = calculateur.calculerCheminPlusRapide(departChoisi, arriveeChoisie);
+                        Path cheminSurEtRapide = calculateur.calculerCheminPlusSurEtRapide(departChoisi, arriveeChoisie);
 
-                }
+                        if (cheminRapide.empty()) {
+                            JOptionPane.showMessageDialog(this, "Aucun itinéraire possible entre ces deux centres.", "Information", JOptionPane.INFORMATION_MESSAGE);
 
-                lblDureeTotal.setText("Duree total: " + Algo.getDureeTotal() + " min");
+                        } else {
+                            StyleDistrict.appliquerStyleTrajetRapide(cheminRapide);
 
-                // Chemin avec numérotation et indication livraison/transit
-                ArrayList<String> livres = Algo.getLivres();
-                ArrayList<String> etiquettes = Algo.getEtiquettes();
+                            boolean contientRouteInterdite = false;
 
-                String[] etapes = etiquettes.toArray(new String[0]);
+                            for (Edge route : cheminSurEtRapide.getEdgePath()) {
+                                double poids = ((Number) route.getAttribute("dureeEstimee")).doubleValue();
+                                if (poids >= 999999.0) {
+                                    contientRouteInterdite = true;
+                                }
+                            }
+                            StyleDistrict.appliquerStyleTrajetSur(cheminSurEtRapide);
 
-                // JList avec les étapes
-                listeSommet = new JList<>(etapes);
-                listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
+                            for (Edge edge : this.carteVisuelle.getEdgeSet()) { //Nettoyage les marqueur temporelles
+                                edge.removeAttribute("estRapide");
+                            }
+                            for (Node node : carteVisuelle) {
+                                node.removeAttribute("estRapideNode");
+                            }
+                            double dureeTotaleRapide = calculateur.CalculerDureeTotale(cheminRapide, "duree");
+                            this.lblResultatRapide.setText("Trajet Rapide : " + dureeTotaleRapide + " min");
+                            double dureeTotaleSurEtRapide = calculateur.CalculerDureeTotale(cheminSurEtRapide, "dureeEstimee");
+                            this.lblResultatSur.setText("Trajet Sûr : " + String.format("%.2f", dureeTotaleSurEtRapide) + " min");
 
-                JScrollPane scrollPane = new JScrollPane(listeSommet);
-                scrollPane.setPreferredSize(new Dimension(400, 400));
-
-                panneauPopup = new JPanel(new BorderLayout(0, 10));
-                panneauPopup.add(new JLabel(resume.toString()), BorderLayout.NORTH);
-                panneauPopup.add(scrollPane, BorderLayout.CENTER);
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        panneauPopup,
-                        "Tournée glouton  " + livre + " centres livrés",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-            } else {
-                Algo.glouton2Camions(this.graphe, this.carteVisuelle);
-
-                // Met à jour les labels dans la barre latérale
-                lblnbEtape.setText("\nChemin complet (" + (int) (Algo.getTraverseCamion1().size() + Algo.getTraverseCamion2().size()) + " etapes, "
-                        + Algo.getLivres2().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
-                int dureeTotal = 0;
-                if (Algo.getDureeCamion1() < Algo.getDureeCamion2()) {
-                    dureeTotal = Algo.getDureeCamion2();
-                } else {
-                    dureeTotal = Algo.getDureeCamion1();
-                }
-                lblDureeTotal.setText("Duree total: " + dureeTotal + " min");
-
-                ArrayList<String> traverseC1 = Algo.getTraverseCamion1();
-                ArrayList<String> traverseC2 = Algo.getTraverseCamion2();
-                int duree1 = Algo.getDureeCamion1();
-                int duree2 = Algo.getDureeCamion2();
-
-                // Construire la liste des étapes pour le JList
-                ArrayList<String> lignes = new ArrayList<>();
-
-                lignes.add("=== CAMION 1 (bleu) — " + duree1 + " min ===");
-                lignes.addAll(Algo.getEtiquettes2C1());
-
-                lignes.add(""); // ligne vide séparateur
-                lignes.add("=== CAMION 2 (orange) — " + duree2 + " min ===");
-                lignes.addAll(Algo.getEtiquettes2C2());
-
-                lignes.add("Temps du plus lent : " + Math.max(duree1, duree2) + " min");
-                lignes.add("Centres livrés : " + Algo.getLivres2().size()
-                        + " / " + Algo.getTousLesCentres().size());
-
-                // JList avec coloration par camion
-                final int separateur = Algo.getEtiquettes2C1().size() + 1; // index de la ligne vide
-                listeSommet = new JList<>(lignes.toArray(new String[0]));
-                listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
-                listeSommet.setCellRenderer(new javax.swing.DefaultListCellRenderer() {
-                    @Override
-                    public java.awt.Component getListCellRendererComponent(
-                            JList<?> list, Object value, int index,
-                            boolean isSelected, boolean cellHasFocus) {
-                        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                        if (!isSelected) {
-                            if (index <= separateur) {
-                                setBackground(new Color(173, 216, 230)); // bleu clair
-                            } else {
-                                setBackground(new Color(255, 213, 128)); // orange clair
+                            if (contientRouteInterdite) {
+                                JOptionPane.showMessageDialog(this,
+                                        "Impossible de trouver un chemin totalement sûr. Le seul itinéraire possible emprunte une route dont la fiabilité est dangereuse( <0.25).",
+                                        "Alerte Sécurité",
+                                        JOptionPane.WARNING_MESSAGE);
                             }
                         }
-                        return this;
+
+                    } catch (IllegalArgumentException ex) {
+                        JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
                     }
-                });
+                }
+        );
 
-                javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
-                scrollPane.setPreferredSize(new Dimension(400, 400));
+        btnReintialiser.addActionListener(
+                (e) -> {
+                    this.Reintialiser();
+                }
+        );
 
-                // Résumé au-dessus de la liste
-                StringBuilder resume = new StringBuilder();
-                resume.append("Centres livrés : ").append(Algo.getLivres2().size())
-                        .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
-                resume.append("Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+        btnGlouton.addActionListener(
+                (e) -> {
+                    if (!districtCharge()) {
+                        return;
+                    }
+                    // Demander le nombre de camions 
+                    String[] options = {"1 camion", "2 camions"};
+                    int choix = JOptionPane.showOptionDialog(
+                            this,
+                            "Combien de camions sont disponibles ?",
+                            "Choix du nombre de camions",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            options[0]
+                    );
 
-                panneauPopup = new JPanel(new BorderLayout(0, 10));
-                panneauPopup.add(new JLabel("Résultat 2 camions   "
-                        + "Camion 1 (bleu) : " + duree1 + " min | "
-                        + "Camion 2 (orange) : " + duree2 + " min"),
-                        BorderLayout.NORTH);
-                panneauPopup.add(scrollPane, BorderLayout.CENTER);
+                    // L'utilisateur a fermé la fenêtre sans choisir
+                    if (choix == JOptionPane.CLOSED_OPTION) {
+                        return;
+                    }
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        panneauPopup,
-                        "Glouton 2 camions",
-                        JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
+                    JPanel panneauPopup;
+                    // Réinitialiser les styles avant de lancer l'algo
+                    // pour ne pas empiler les colorations
+                    StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
 
-        tfRouteRisque.addFocusListener(new ChampsTexteEcouteur("Saisissez la fiabilité"));
-        tfCentreDepart.addFocusListener(new ChampsTexteEcouteur("Centre de départ"));
-        tfCentreArrivee.addFocusListener(new ChampsTexteEcouteur("Centre d'arrivée"));
+                    if (choix == 0) {
+                        String[] centres = {"Tous les centres", "Les maternites", "Les centres operatoires", "Les centres de nutritions"};
+                        int option = JOptionPane.showOptionDialog(
+                                this,
+                                "Quels centres voulez vous livrer",
+                                "Choix des centres a livrer",
+                                JOptionPane.DEFAULT_OPTION,
+                                JOptionPane.QUESTION_MESSAGE,
+                                null,
+                                centres,
+                                centres[0]
+                        );
+                        Algo.glouton(this.graphe, this.carteVisuelle, option);
+                        // Met à jour les labels dans la barre latérale
+                        int livre = 0;
+                        int nbcentretraverse = Algo.getTraverse().size();
+                        StringBuilder resume = new StringBuilder();
+                        if (option == 1) {
+                            livre = Algo.getLivres().size() - this.graphe.CompterCentreParType(Type_Centre.operatoire) - this.graphe.CompterCentreParType(Type_Centre.nutrition);
+                            resume.append("\nChemin complet (" + nbcentretraverse + " etapes, " + livre + "/" + this.graphe.CompterCentreParType(Type_Centre.maternite) + " centres livres) ");
+                            lblnbEtape.setText("" + resume);
+                        } else if (option == 2) {
+                            livre = Algo.getLivres().size() - this.graphe.CompterCentreParType(Type_Centre.maternite) - this.graphe.CompterCentreParType(Type_Centre.nutrition);
+                            resume.append("\nChemin complet (" + nbcentretraverse + " etapes, " + livre + "/" + this.graphe.CompterCentreParType(Type_Centre.operatoire) + " centres livres) ");
+                            lblnbEtape.setText("" + resume);
+                        } else if (option == 3) {
+                            livre = Algo.getLivres().size() - this.graphe.CompterCentreParType(Type_Centre.maternite) - this.graphe.CompterCentreParType(Type_Centre.operatoire);
+                            resume.append("\nChemin complet (" + nbcentretraverse + " etapes, " + livre + "/" + this.graphe.CompterCentreParType(Type_Centre.nutrition) + " centres livres) ");
+                            lblnbEtape.setText("" + resume);
+                        } else {
+                            livre = Algo.getLivres().size();
+                            lblnbEtape.setText("\nChemin complet (" + Algo.getTraverse().size() + " etapes, "
+                                    + livre + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
+
+                        }
+
+                        lblDureeTotal.setText("Duree total: " + Algo.getDureeTotal() + " min");
+
+                        // Chemin avec numérotation et indication livraison/transit
+                        ArrayList<String> livres = Algo.getLivres();
+                        ArrayList<String> etiquettes = Algo.getEtiquettes();
+
+                        String[] etapes = etiquettes.toArray(new String[0]);
+
+                        // JList avec les étapes
+                        listeSommet = new JList<>(etapes);
+                        listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
+
+                        JScrollPane scrollPane = new JScrollPane(listeSommet);
+                        scrollPane.setPreferredSize(new Dimension(400, 400));
+
+                        panneauPopup = new JPanel(new BorderLayout(0, 10));
+                        panneauPopup.add(new JLabel(resume.toString()), BorderLayout.NORTH);
+                        panneauPopup.add(scrollPane, BorderLayout.CENTER);
+
+                        JOptionPane.showMessageDialog(
+                                this,
+                                panneauPopup,
+                                "Tournée glouton  " + livre + " centres livrés",
+                                JOptionPane.INFORMATION_MESSAGE
+                        );
+                    } else {
+                        Algo.glouton2Camions(this.graphe, this.carteVisuelle);
+
+                        // Met à jour les labels dans la barre latérale
+                        lblnbEtape.setText("\nChemin complet (" + (int) (Algo.getTraverseCamion1().size() + Algo.getTraverseCamion2().size()) + " etapes, "
+                                + Algo.getLivres2().size() + "/" + Algo.getTousLesCentres().size() + " centres livres) ");
+                        int dureeTotal = 0;
+                        if (Algo.getDureeCamion1() < Algo.getDureeCamion2()) {
+                            dureeTotal = Algo.getDureeCamion2();
+                        } else {
+                            dureeTotal = Algo.getDureeCamion1();
+                        }
+                        lblDureeTotal.setText("Duree total: " + dureeTotal + " min");
+
+                        ArrayList<String> traverseC1 = Algo.getTraverseCamion1();
+                        ArrayList<String> traverseC2 = Algo.getTraverseCamion2();
+                        int duree1 = Algo.getDureeCamion1();
+                        int duree2 = Algo.getDureeCamion2();
+
+                        // Construire la liste des étapes pour le JList
+                        ArrayList<String> lignes = new ArrayList<>();
+
+                        lignes.add("=== CAMION 1 (bleu) — " + duree1 + " min ===");
+                        lignes.addAll(Algo.getEtiquettes2C1());
+
+                        lignes.add(""); // ligne vide séparateur
+                        lignes.add("=== CAMION 2 (orange) — " + duree2 + " min ===");
+                        lignes.addAll(Algo.getEtiquettes2C2());
+
+                        lignes.add("Temps du plus lent : " + Math.max(duree1, duree2) + " min");
+                        lignes.add("Centres livrés : " + Algo.getLivres2().size()
+                                + " / " + Algo.getTousLesCentres().size());
+
+                        // JList avec coloration par camion
+                        final int separateur = Algo.getEtiquettes2C1().size() + 1; // index de la ligne vide
+                        listeSommet = new JList<>(lignes.toArray(new String[0]));
+                        listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
+                        listeSommet.setCellRenderer(new javax.swing.DefaultListCellRenderer() {
+                            @Override
+                            public java.awt.Component getListCellRendererComponent(
+                                    JList<?> list, Object value, int index,
+                                    boolean isSelected, boolean cellHasFocus) {
+                                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                                if (!isSelected) {
+                                    if (index <= separateur) {
+                                        setBackground(new Color(173, 216, 230)); // bleu clair
+                                    } else {
+                                        setBackground(new Color(255, 213, 128)); // orange clair
+                                    }
+                                }
+                                return this;
+                            }
+                        });
+
+                        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
+                        scrollPane.setPreferredSize(new Dimension(400, 400));
+
+                        // Résumé au-dessus de la liste
+                        StringBuilder resume = new StringBuilder();
+                        resume.append("Centres livrés : ").append(Algo.getLivres2().size())
+                                .append(" / ").append(Algo.getTousLesCentres().size()).append("\n");
+                        resume.append("Durée totale   : ").append(Algo.getDureeTotal()).append(" min\n");
+
+                        panneauPopup = new JPanel(new BorderLayout(0, 10));
+                        panneauPopup.add(new JLabel("Résultat 2 camions   "
+                                + "Camion 1 (bleu) : " + duree1 + " min | "
+                                + "Camion 2 (orange) : " + duree2 + " min"),
+                                BorderLayout.NORTH);
+                        panneauPopup.add(scrollPane, BorderLayout.CENTER);
+
+                        JOptionPane.showMessageDialog(
+                                this,
+                                panneauPopup,
+                                "Glouton 2 camions",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
+                }
+        );
+
+        tfRouteRisque.addFocusListener(
+                new ChampsTexteEcouteur("Saisissez la fiabilité"));
+        tfCentreDepart.addFocusListener(
+                new ChampsTexteEcouteur("Centre de départ"));
+        tfCentreArrivee.addFocusListener(
+                new ChampsTexteEcouteur("Centre d'arrivée"));
     }
 
     /**
@@ -701,9 +762,6 @@ public class Fenetre extends JFrame {
         checkMaternite.setSelected(true);
         checkNutrition.setSelected(true);
         checkOperatoire.setSelected(true);
-        checkDistance.setSelected(false);
-        checkDuree.setSelected(false);
-        checkFiabilite.setSelected(false);
 
         tfCentreDepart.setText("Centre de départ");
         tfCentreArrivee.setText("Centre d'arrivée");
@@ -719,7 +777,6 @@ public class Fenetre extends JFrame {
         revalidate();
         if (this.carteVisuelle != null) {
             StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
-            actualiserLabelsRoutes();
         }
     }
 
@@ -847,52 +904,6 @@ public class Fenetre extends JFrame {
             fraction = (int) Math.round(fiabilite * 10);
         }
         return fraction + "/10";
-    }
-
-    /**
-     * Met à jour les labels affichés sur les routes du graphe selon l'état des
-     * cases distance, durée et fiabilité.
-     */
-    private void actualiserLabelsRoutes() {
-        if (!districtCharge()) {
-            return;
-        }
-
-        boolean afficherDistance = checkDistance.isSelected();
-        boolean afficherDuree = checkDuree.isSelected();
-        boolean afficherFiabilite = checkFiabilite.isSelected();
-
-        boolean auMoinsUnCoche = afficherDistance || afficherDuree || afficherFiabilite;
-
-        for (Edge edge : this.carteVisuelle.getEdgeSet()) {
-
-            if (!auMoinsUnCoche) {
-                edge.setAttribute("ui.label", "");
-            } else {
-
-                StringBuilder texteLabel = new StringBuilder();
-
-                if (afficherDistance) {
-                    texteLabel.append(edge.getAttribute("distance").toString()).append(" km ");
-                }
-
-                if (afficherDuree) {
-                    if (texteLabel.length() > 0) {
-                        texteLabel.append("- ");
-                    }
-                    texteLabel.append(edge.getAttribute("duree").toString()).append(" min ");
-                }
-
-                if (afficherFiabilite) {
-                    if (texteLabel.length() > 0) {
-                        texteLabel.append("- ");
-                    }
-                    double fiabilite = ((Number) edge.getAttribute("fiabilite")).doubleValue();
-                    texteLabel.append("Fiab: ").append(fiabiliteEnFraction(fiabilite));
-                }
-                edge.setAttribute("ui.label", texteLabel.toString().trim());
-            }
-        }
     }
 
 }
