@@ -31,7 +31,7 @@ public class VisualiationDistrict {
         Graph graphAffichage = new SingleGraph("MediGPS");
 
            graphAffichage.setAttribute("ui.stylesheet",
-                "node { size: 20px; fill-color: #4A90D9; text-mode: normal; text-size: 13px; } "
+                "node { size: 15px; fill-color: #4A90D9; text-mode: normal; text-size: 13px; } "
                 + "node.maternite  { fill-color: blue; } "
                 + "node.operatoire { fill-color: red; } "
                 + "node.nutrition  { fill-color: green; } "

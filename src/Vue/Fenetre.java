@@ -65,11 +65,11 @@ public class Fenetre extends JFrame {
      * panneau Swing.
      */
     private Viewer viewer;
-    
+
     /**
      * Le district actuellement chargé, utilisé pour extraire les données.
      */
-    private District graphe;  
+    private District graphe;
 
     /**
      * Le sélecteur numérique permettant de choisir le nombre de sommets à
@@ -389,7 +389,7 @@ public class Fenetre extends JFrame {
         });
 
         checkMaternite.addActionListener((e) -> {
-            if (this.carteVisuelle == null) {
+            if (!districtCharge()) {
                 return;
             }
             StyleDistrict.AfficherCentreParType(this.carteVisuelle, "maternite", checkMaternite.isSelected());
@@ -397,7 +397,7 @@ public class Fenetre extends JFrame {
         });
 
         checkNutrition.addActionListener((e) -> {
-            if (this.carteVisuelle == null) {
+            if (!districtCharge()) {
                 return;
             }
             StyleDistrict.AfficherCentreParType(this.carteVisuelle, "nutrition", checkNutrition.isSelected());
@@ -405,58 +405,16 @@ public class Fenetre extends JFrame {
         });
 
         checkOperatoire.addActionListener((e) -> {
-            if (this.carteVisuelle == null) {
+            if (!districtCharge()) {
                 return;
             }
             StyleDistrict.AfficherCentreParType(this.carteVisuelle, "operatoire", checkOperatoire.isSelected());
             StyleDistrict.AfficherOuMasquerRoutes(this.carteVisuelle);
         });
 
-        ActionListener ecouteurLabels = e -> {
-            if (this.carteVisuelle != null) {
-
-                // On vérifie l'état des trois cases
-                boolean afficherDistance = checkDistance.isSelected();
-                boolean afficherDuree = checkDuree.isSelected();
-                boolean afficherFiabilite = checkFiabilite.isSelected();
-
-                boolean auMoinsUnCoche = afficherDistance || afficherDuree || afficherFiabilite;
-
-                for (Edge edge : this.carteVisuelle.getEdgeSet()) {
-
-                    if (!auMoinsUnCoche) {
-                        edge.setAttribute("ui.label", "");
-                    } else {
-
-                        StringBuilder texteLabel = new StringBuilder();
-
-                        if (afficherDistance) {
-                            texteLabel.append(edge.getAttribute("distance").toString()).append(" km ");
-                        }
-
-                        if (afficherDuree) {
-                            if (texteLabel.length() > 0) {
-                                texteLabel.append("- ");
-                            }
-                            texteLabel.append(edge.getAttribute("duree").toString()).append(" min ");
-                        }
-
-                        if (afficherFiabilite) {
-                            if (texteLabel.length() > 0) {
-                                texteLabel.append("- ");
-                            }
-                            double fiabilite = ((Number) edge.getAttribute("fiabilite")).doubleValue();
-                            texteLabel.append("Fiab: ").append(fiabiliteEnFraction(fiabilite));
-                        }
-                        edge.setAttribute("ui.label", texteLabel.toString().trim());
-                    }
-                }
-            }
-        };
-
-        checkDistance.addActionListener(ecouteurLabels);
-        checkDuree.addActionListener(ecouteurLabels);
-        checkFiabilite.addActionListener(ecouteurLabels);
+        checkDistance.addActionListener((e) -> actualiserLabelsRoutes());
+        checkDuree.addActionListener((e) -> actualiserLabelsRoutes());
+        checkFiabilite.addActionListener((e) -> actualiserLabelsRoutes());
 
         btnFiltrer.addActionListener((e) -> {
             if (!districtCharge()) {
@@ -562,34 +520,7 @@ public class Fenetre extends JFrame {
         );
 
         btnReintialiser.addActionListener((e) -> {
-
-            checkMaternite.setSelected(true);
-            checkNutrition.setSelected(true);
-            checkOperatoire.setSelected(true);
-            checkDistance.setSelected(true);
-            checkDuree.setSelected(false);
-            checkFiabilite.setSelected(false);
-
-            tfCentreDepart.setText("Centre de départ");
-            tfCentreArrivee.setText("Centre d'arrivée");
-            tfRouteRisque.setText("Saisissez la fiabilité");
-
-            lblResultatRapide.setText("Trajet rapide : —");
-            lblResultatSur.setText("Trajet sûr : —");
-            lblnbEtape.setText(" ");
-            lblDureeTotal.setText(" ");
-            lblCheminComplet.setText(" ");
-            lblNbMaternite.setText("Nombre de maternité : 0");
-            lblNutrition.setText("Nombre de nutrition : 0");
-            lblNbOperatoire.setText("Nombre de bloc opératoire : 0");
-
-            if (this.carteVisuelle != null) {
-                StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
-            }
-
-            Reintialiser();
-
-            lblbarreStatut.setText("Routes réinitialisées.");
+            this.Reintialiser();
         });
 
         btnGlouton.addActionListener((e) -> {
@@ -761,13 +692,16 @@ public class Fenetre extends JFrame {
         tfRouteRisque.addFocusListener(new ChampsTexteEcouteur("Saisissez la fiabilité"));
         tfCentreDepart.addFocusListener(new ChampsTexteEcouteur("Centre de départ"));
         tfCentreArrivee.addFocusListener(new ChampsTexteEcouteur("Centre d'arrivée"));
-
     }
-    private void Reintialiser(){
+
+    /**
+     * Reintialise la carte à son état d'origine
+     */
+    private void Reintialiser() {
         checkMaternite.setSelected(true);
         checkNutrition.setSelected(true);
         checkOperatoire.setSelected(true);
-        checkDistance.setSelected(true);
+        checkDistance.setSelected(false);
         checkDuree.setSelected(false);
         checkFiabilite.setSelected(false);
 
@@ -780,12 +714,12 @@ public class Fenetre extends JFrame {
         lblnbEtape.setText(" ");
         lblDureeTotal.setText(" ");
         lblCheminComplet.setText(" ");
-//        lblNbMaternite.setText("Nombre de maternité : 0");
-//        lblNutrition.setText("Nombre de nutrition : 0");
-//        lblNbOperatoire.setText("Nombre de bloc opératoire : 0");
 
-        if(this.carteVisuelle != null){
+        repaint();
+        revalidate();
+        if (this.carteVisuelle != null) {
             StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
+            actualiserLabelsRoutes();
         }
     }
 
@@ -898,7 +832,7 @@ public class Fenetre extends JFrame {
         return true;
     }
 
-     /**
+    /**
      * Transforme la fiabilite qui est une probabilite entre 0.2 et 1.0 en une
      * fraction sur 10.
      *
@@ -906,7 +840,59 @@ public class Fenetre extends JFrame {
      * @return La fiabilité exprimée sous forme de fraction sur 10 (ex: "8/10").
      */
     private String fiabiliteEnFraction(double fiabilite) {
-        int fraction = (int) Math.round(fiabilite * 10);
+        int fraction;
+        if (fiabilite > 1.0) {
+            fraction = (int) Math.round(fiabilite);
+        } else {
+            fraction = (int) Math.round(fiabilite * 10);
+        }
         return fraction + "/10";
     }
+
+    /**
+     * Met à jour les labels affichés sur les routes du graphe selon l'état des
+     * cases distance, durée et fiabilité.
+     */
+    private void actualiserLabelsRoutes() {
+        if (!districtCharge()) {
+            return;
+        }
+
+        boolean afficherDistance = checkDistance.isSelected();
+        boolean afficherDuree = checkDuree.isSelected();
+        boolean afficherFiabilite = checkFiabilite.isSelected();
+
+        boolean auMoinsUnCoche = afficherDistance || afficherDuree || afficherFiabilite;
+
+        for (Edge edge : this.carteVisuelle.getEdgeSet()) {
+
+            if (!auMoinsUnCoche) {
+                edge.setAttribute("ui.label", "");
+            } else {
+
+                StringBuilder texteLabel = new StringBuilder();
+
+                if (afficherDistance) {
+                    texteLabel.append(edge.getAttribute("distance").toString()).append(" km ");
+                }
+
+                if (afficherDuree) {
+                    if (texteLabel.length() > 0) {
+                        texteLabel.append("- ");
+                    }
+                    texteLabel.append(edge.getAttribute("duree").toString()).append(" min ");
+                }
+
+                if (afficherFiabilite) {
+                    if (texteLabel.length() > 0) {
+                        texteLabel.append("- ");
+                    }
+                    double fiabilite = ((Number) edge.getAttribute("fiabilite")).doubleValue();
+                    texteLabel.append("Fiab: ").append(fiabiliteEnFraction(fiabilite));
+                }
+                edge.setAttribute("ui.label", texteLabel.toString().trim());
+            }
+        }
+    }
+
 }
