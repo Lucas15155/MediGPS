@@ -263,13 +263,13 @@ public class Algo {
         // Coloriage graphique 
         // Centres livrés en rouge
         if (option == 1) {
-            colorierTournee(g, traverse, "blue", livres);
+            colorierTournee(g, traverse, "blue");
         } else if (option == 2) {
-            colorierTournee(g, traverse, "red", livres);
+            colorierTournee(g, traverse, "red");
         } else if (option == 3) {
-            colorierTournee(g, traverse, "green", livres);
+            colorierTournee(g, traverse, "green");
         } else {
-            colorierTournee(g, traverse, "orange", livres);
+            colorierTournee(g, traverse, "orange");
         }
 
         return g;
@@ -489,8 +489,8 @@ public class Algo {
         }
 
         //  Coloriage : camion 1 en bleu, camion 2 en orange 
-        colorierTournee(g, traverseCamion1, "blue", livres2);
-        colorierTournee(g, traverseCamion2, "orange", livres2);
+        colorierTournee(g, traverseCamion1, "blue");
+        colorierTournee(g, traverseCamion2, "orange");
 
         return g;
     }
@@ -503,10 +503,8 @@ public class Algo {
      * tournée à colorier.
      * @param couleur Le nom de la couleur CSS GraphStream à appliquer (ex:
      * "blue", "red", "orange").
-     * @param livres La liste des identifiants de centres livrés (paramètre
-     * actuellement non utilisé dans le corps de la méthode).
      */
-    private static void colorierTournee(Graph g, ArrayList<String> tournee, String couleur, ArrayList<String> livres) {
+    private static void colorierTournee(Graph g, ArrayList<String> tournee, String couleur) {
         for (String id : tournee) {
             Node node = g.getNode(id);
             if (node != null) {
