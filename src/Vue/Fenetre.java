@@ -726,7 +726,7 @@ public class Fenetre extends JFrame {
         repaint();
         revalidate();
         if (this.carteVisuelle != null) {
-            StyleGraphe.reinitialiserStyleGraphPourCalcul(this.carteVisuelle);
+            StyleDistrict.reinitialiserStyleDistrictPourCalcul(this.carteVisuelle);
         }
     }
 
