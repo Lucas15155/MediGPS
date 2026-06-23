@@ -40,6 +40,7 @@ public class StyleGraphe {
         }
         for (Node centre : graph) {
             centre.setAttribute("ui.style", "stroke-mode: none;");
+            centre.removeAttribute("ui.hide");
         }
     }
 
