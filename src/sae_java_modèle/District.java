@@ -81,7 +81,7 @@ public class District {
      * @return Un double répresentant la fiabilité
      */
     private static double tirerFiabilite() {  //generer une valeur entre 2 et 10
-        double fiabilite = 0.2 ;
+        double fiabilite = 0.2;
         return fiabilite + Math.random() * 0.8;
     }
 
@@ -103,6 +103,7 @@ public class District {
 
             for (int j = i + 1; j < nbSommets; j++) {
                 if (Math.random() < 1.0 / 5.0) { // 20% de chance de créer une route
+
                     double fiabilite = tirerFiabilite();
                     double distance = ent_alea(10, 50);
                     double duree = ent_alea(10, 120);
@@ -116,7 +117,7 @@ public class District {
         }
 
     }
-    
+
     /**
      * Convertit la lettre lue dans un fichier CSV en son équivalent énuméré
      * Centre_Sante
@@ -153,7 +154,7 @@ public class District {
      * @throws LettreCentreSanteException Si la lettre du centre est invalide.
      */
     private static void parserLigneCsv(String ligne, District nouveauGraphe) throws LettreCentreSanteException {
-        String[] colonnes = ligne.split(";",-1);   //separateur du fichier ; 
+        String[] colonnes = ligne.split(";", -1);   //separateur du fichier ; 
         String idSource = colonnes[0];      //premiere colonne du fichier c'est l'idSommet
         String typeLettre = colonnes[1];    //deuxième colonne cest le type de centre
 
@@ -165,7 +166,7 @@ public class District {
         for (int i = 2; i < colonnes.length; i++) {     //pour chaque colonnes voir si il y une destinations si oui decouper en 3 colonnes
             String valeurRoute = colonnes[i];
 
-            if (valeurRoute.isEmpty() ||valeurRoute.equals("0")) {
+            if (valeurRoute.isEmpty() || valeurRoute.equals("0")) {
                 continue;  //saute l'etape 
             }
 
@@ -240,9 +241,9 @@ public class District {
     }
 
     /**
-     *Compte le nombre de centres de santé d'un type donné présents dans le
+     * Compte le nombre de centres de santé d'un type donné présents dans le
      * district.
-     * 
+     *
      * @param type du centre de sante a compté
      * @return un entier qui represente le nombre de centre d'un type dans un
      * District
