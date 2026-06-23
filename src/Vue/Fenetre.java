@@ -407,66 +407,17 @@ public class Fenetre extends JFrame {
             StyleDistrict.AfficherOuMasquerRoutes(this.carteVisuelle);
         });
 
-        btnAfficher.addActionListener((e) -> {
-            if (!districtCharge()) {
-                return;
+        btnAfficher.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!districtCharge()) {
+                    return;
+                }
+                afficherDialogueRoutes();
             }
-
-            // --- Construction de la liste complète des routes ---
-            DefaultListModel<String> modelComplet = new DefaultListModel<>();
-            for (Edge edge : this.carteVisuelle.getEdgeSet()) {
-                double fiabilite = ((Number) edge.getAttribute("fiabilite")).doubleValue();
-                String fiabiliteTexte = fiabiliteEnFraction(fiabilite);
-
-                modelComplet.addElement(edge.getId()
-                        + "  |  Fiabilité: " + fiabiliteTexte
-                        + "  |  Durée: " + edge.getAttribute("duree") + " min"
-                        + "  |  Distance: " + edge.getAttribute("distance") + " km");
-            }
-
-            JList<String> liste = new JList<>(modelComplet);
-
-            JTextField champRecherche = new JTextField();
-            champRecherche.getDocument().addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent ev) {
-                    filtrer();
-                }
-
-                @Override
-                public void removeUpdate(DocumentEvent ev) {
-                    filtrer();
-                }
-
-                @Override
-                public void changedUpdate(DocumentEvent ev) {
-                    filtrer();
-                }
-
-                private void filtrer() {
-                    String texte = champRecherche.getText().toLowerCase().trim();
-                    if (texte.isEmpty()) {
-                        liste.setModel(modelComplet);
-                        return;
-                    }
-                    DefaultListModel<String> modelFiltre = new DefaultListModel<>();
-                    for (int i = 0; i < modelComplet.size(); i++) {
-                        String ligne = modelComplet.get(i);
-                        if (ligne.toLowerCase().contains(texte)) {
-                            modelFiltre.addElement(ligne);
-                        }
-                    }
-                    liste.setModel(modelFiltre);
-                }
-            });
-
-            JPanel panneau = new JPanel(new BorderLayout(5, 5));
-            panneau.add(champRecherche, BorderLayout.NORTH);
-            panneau.add(new JScrollPane(liste), BorderLayout.CENTER);
-            panneau.setPreferredSize(new Dimension(450, 400));
-
-            JOptionPane.showMessageDialog(this, panneau, "Routes : fiabilité, durée, distance", JOptionPane.PLAIN_MESSAGE);
         });
+
+            
 
         btnFiltrer.addActionListener(
                 (e) -> {
@@ -574,7 +525,8 @@ public class Fenetre extends JFrame {
                 }
         );
 
-        btnReintialiser.addActionListener((e) -> { this.Reintialiser(); 
+        btnReintialiser.addActionListener((e) -> {
+            this.Reintialiser();
         });
 
         btnGlouton.addActionListener(
@@ -904,4 +856,65 @@ public class Fenetre extends JFrame {
         return fraction + "/10";
     }
 
+    /**
+     * Construit et affiche la boîte de dialogue listant toutes les routes du
+     * district avec leur fiabilité, durée et distance, avec un champ de
+     * recherche permettant de filtrer la liste en temps réel.
+     */
+    private void afficherDialogueRoutes() {
+        // --- Construction de la liste complète des routes ---
+        DefaultListModel<String> modelComplet = new DefaultListModel<>();
+        for (Edge edge : this.carteVisuelle.getEdgeSet()) {
+            double fiabilite = ((Number) edge.getAttribute("fiabilite")).doubleValue();
+            String fiabiliteTexte = fiabiliteEnFraction(fiabilite);
+
+            modelComplet.addElement(edge.getId()
+                    + "  |  Fiabilité: " + fiabiliteTexte
+                    + "  |  Durée: " + edge.getAttribute("duree") + " min"
+                    + "  |  Distance: " + edge.getAttribute("distance") + " km");
+        }
+
+        JList<String> liste = new JList<>(modelComplet);
+
+        JTextField champRecherche = new JTextField();
+        champRecherche.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent ev) {
+                filtrer();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent ev) {
+                filtrer();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent ev) {
+                filtrer();
+            }
+
+            private void filtrer() {
+                String texte = champRecherche.getText().toLowerCase().trim();
+                if (texte.isEmpty()) {
+                    liste.setModel(modelComplet);
+                    return;
+                }
+                DefaultListModel<String> modelFiltre = new DefaultListModel<>();
+                for (int i = 0; i < modelComplet.size(); i++) {
+                    String ligne = modelComplet.get(i);
+                    if (ligne.toLowerCase().contains(texte)) {
+                        modelFiltre.addElement(ligne);
+                    }
+                }
+                liste.setModel(modelFiltre);
+            }
+        });
+
+        JPanel panneau = new JPanel(new BorderLayout(5, 5));
+        panneau.add(champRecherche, BorderLayout.NORTH);
+        panneau.add(new JScrollPane(liste), BorderLayout.CENTER);
+        panneau.setPreferredSize(new Dimension(450, 400));
+
+        JOptionPane.showMessageDialog(this, panneau, "Routes : fiabilité, durée, distance", JOptionPane.PLAIN_MESSAGE);
+    }
 }
