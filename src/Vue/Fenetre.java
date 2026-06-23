@@ -18,6 +18,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -319,7 +320,7 @@ public class Fenetre extends JFrame {
         //============================================= panneau de gauche dans la fentre
         JPanel panneauInfo = new JPanel(new GridBagLayout());
         panneauInfo.setBorder(new EmptyBorder(6, 6, 6, 6));
-        panneauInfo.setPreferredSize(new Dimension(300, 0));
+        panneauInfo.setPreferredSize(new Dimension(330, 0));
         GridBagConstraints gcW = new GridBagConstraints();
         gcW.gridx = 0;
         gcW.fill = GridBagConstraints.HORIZONTAL;
@@ -573,11 +574,8 @@ public class Fenetre extends JFrame {
                 }
         );
 
-        btnReintialiser.addActionListener(
-                (e) -> {
-                    this.Reintialiser();
-                }
-        );
+        btnReintialiser.addActionListener((e) -> { this.Reintialiser(); 
+        });
 
         btnGlouton.addActionListener(
                 (e) -> {
@@ -705,9 +703,9 @@ public class Fenetre extends JFrame {
                         final int separateur = Algo.getEtiquettes2C1().size() + 1; // index de la ligne vide
                         listeSommet = new JList<>(lignes.toArray(new String[0]));
                         listeSommet.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
-                        listeSommet.setCellRenderer(new javax.swing.DefaultListCellRenderer() {
+                        listeSommet.setCellRenderer(new DefaultListCellRenderer() {
                             @Override
-                            public java.awt.Component getListCellRendererComponent(
+                            public Component getListCellRendererComponent(
                                     JList<?> list, Object value, int index,
                                     boolean isSelected, boolean cellHasFocus) {
                                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -722,7 +720,7 @@ public class Fenetre extends JFrame {
                             }
                         });
 
-                        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(listeSommet);
+                        JScrollPane scrollPane = new JScrollPane(listeSommet);
                         scrollPane.setPreferredSize(new Dimension(400, 400));
 
                         // Résumé au-dessus de la liste
