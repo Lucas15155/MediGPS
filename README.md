@@ -7,7 +7,8 @@ Projet réalisé dans le cadre d'une SAE (BUT 2 Informatique).
 <!-- Ajouter une capture d'écran de l'application :
 ![Aperçu de MediGPS](docs/apercu.png)
 -->
-
+<img width="2222" height="1236" alt="Capture d&#39;écran 2026-11-04 200908" src="https://github.com/user-attachments/assets/85a66137-a170-4df6-83db-3e2a5d958a81" />
+<img width="2217" height="1232" alt="Capture d&#39;écran 2026-11-04 201016" src="https://github.com/user-attachments/assets/6e21289a-c115-47ae-b208-8daba18a7410" />
 ---
 
 ## Fonctionnalités
@@ -90,17 +91,6 @@ test/
 3. Ajouter les JAR GraphStream dans les bibliothèques du projet.
 4. Lancer la classe `sae_java_modèle.SAE_JAVA`.
 
-### En ligne de commande (Ant)
-```bash
-ant clean jar
-java -jar dist/SAE_JAVA.jar
-```
-
-### Lancer les tests
-```bash
-ant test
-```
-
 ---
 
 ## Format du fichier CSV
@@ -140,5 +130,5 @@ S2;O;7,25,40;0;3,12,30;...
 
 ## Auteurs
 
-- **[Prénom Nom]** — [lien GitHub / LinkedIn]
-- **[Prénom Nom]** — [lien GitHub / LinkedIn]
+Lucas BENOIT p2504557
+Badis LARIBI p2503283
