@@ -2,7 +2,7 @@
 
 Application Java avec interface graphique qui modélise un **réseau de centres de santé** sous forme de graphe, calcule des **itinéraires optimaux** et planifie des **tournées de livraison** avec un ou deux camions.
 
-Projet réalisé dans le cadre d'une SAE (BUT 2 Informatique).
+Projet réalisé dans le cadre d'une SAE (BUT 1 Informatique).
 
 <!-- Ajouter une capture d'écran de l'application :
 ![Aperçu de MediGPS](docs/apercu.png)
